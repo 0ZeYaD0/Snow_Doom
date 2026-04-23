@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <window/window.h>
 
 using namespace std;
 
@@ -87,31 +88,12 @@ static unsigned int createShaderProgram(const string &vertexPath, const string &
 
 int main()
 {
-    if (!glfwInit())
-    {
-        cout << "Failed to initialize GLFW" << endl;
-        return -1;
-    }
+    Window win;
+    win.SetWindowSize(800, 600);
+    win.SetWindowTitle("test");
+    win.InitializeWindow();
 
-    glfwWindowHint(GLFW_SAMPLES, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    GLFWwindow *window;
-    window = glfwCreateWindow(800, 600, "test", NULL, NULL);
-    if (window == NULL)
-    {
-        cout << "Failed to open GLFW window" << endl;
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        cout << "Failed to initialize GLAD" << endl;
-        return -1;
-    }
+    GLFWwindow *window = win.GetWindow();
 
     unsigned int shaderProgram;
     try
@@ -137,8 +119,10 @@ int main()
     unsigned int projLoc = glGetUniformLocation(shaderProgram, "projection");
     unsigned int colorLoc = glGetUniformLocation(shaderProgram, "circleColor");
 
-    while (!glfwWindowShouldClose(window))
+    while (!win.WindowShouldClose())
     {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
             cameraPos += cameraSpeed * 0.016f * cameraFront;
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -149,7 +133,7 @@ int main()
             cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed * 0.016f;
 
         glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)win.GetWidth() / win.GetHeight(), 0.1f, 100.0f);
 
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
