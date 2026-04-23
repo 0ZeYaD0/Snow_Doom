@@ -119,13 +119,13 @@ int main()
         return -1;
     }
 
-    std::string vertexCode = loadShader("vertex.glsl");
+    std::string vertexCode = loadShader("res/shaders/vertex.glsl");
     const char *vertexShaderSource = vertexCode.c_str();
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
 
-    std::string fragmentCode = loadShader("fragment.glsl");
+    std::string fragmentCode = loadShader("res/shaders/fragment.glsl");
     const char *fragmentShaderSource = fragmentCode.c_str();
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);

@@ -1,0 +1,26 @@
+workspace: Main
+dist: "bin"
+obj: "build/obj"
+
+compiler: g++
+cpp_std: c++20
+
+conf: debug {
+    flags: [ -g, -O0 ]
+    defines: [ DEBUG ]
+}
+
+conf: release {
+    flags: [ -O3 ]
+    defines: [ NDEBUG ]
+}
+
+project: snow_doom {
+    kind: exe
+    language: cpp
+    src: [ "src/**/*.cpp"]
+    inc: [ "include" ]
+    libdirs: [ "lib" ]
+
+    links: [ opengl32, gdi32, glfw3dll, glad ]
+}
