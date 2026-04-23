@@ -9,8 +9,6 @@ typedef unsigned short u16;
 typedef unsigned int u32;
 typedef unsigned long long u64;
 
-typedef size_t usize;
-
 // signed int types
 typedef signed char i8;
 typedef signed short i16;
@@ -26,29 +24,29 @@ typedef double f64;
 
 // define static assertions
 #if defined(__clang__) || defined(__gcc__) || defined(__GNUC__)
-    #define ST_ASSERT _Static_assert
+#define ST_ASSERT _Static_assert
 #else
-    #define ST_ASSERT static_assert
+#define ST_ASSERT static_assert
 #endif
 
 // platform detection
 
 // windows
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
-    #define IPLATFORM_WINDOWS 1
-    #ifndef _WIN64
-        #error "64-bit is required on windows."
-    #endif
+#define IPLATFORM_WINDOWS 1
+#ifndef _WIN64
+#error "64-bit is required on windows."
+#endif
 // linux
 #elif defined(__linux__) || defined(__gnu_linux__)
-    #define IPLATFORM_LINUX 1
+#define IPLATFORM_LINUX 1
 #elif defined(__unix__)
-    #define IPLATFORM_UNIX 1
+#define IPLATFORM_UNIX 1
 #elif defined(__POSIX__)
-    #define IPLATFORM_POSIX 1
+#define IPLATFORM_POSIX 1
 // catch any other unsupported OS
 #else
-    #error "platform is not supported."
+#error "platform is not supported."
 #endif
 
 #endif // DEFINES_H

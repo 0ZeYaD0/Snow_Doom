@@ -23,7 +23,7 @@ void Window::OnWindowResize(GLFWwindow *window, i32 width, i32 height)
 void Window::InitializeWindow()
 {
     // initialize glfw
-    if(!glfwInit())
+    if (!glfwInit())
     {
         ErrorCallback(1, "failed to init GLFW.");
     }
@@ -40,26 +40,24 @@ void Window::InitializeWindow()
     Window::monitor_width = screen->width;
     Window::monitor_height = screen->width;
 
-    if(fullscreen)
+    if (fullscreen)
     {
         SetWindowSize(monitor_width, monitor_height);
 
         window = glfwCreateWindow(
             monitor_width, monitor_height,
             GetTitle().c_str(),
-            monitor, nullptr
-        );
+            monitor, nullptr);
     }
     else
     {
         window = glfwCreateWindow(
-            GetWidth(), GetHeight(), 
-            GetTitle().c_str(), 
-            nullptr, nullptr
-        );
+            GetWidth(), GetHeight(),
+            GetTitle().c_str(),
+            nullptr, nullptr);
     }
 
-    if(!window)
+    if (!window)
     {
         ErrorCallback(1, "window was not correctly initialized");
         glfwTerminate();
@@ -67,7 +65,7 @@ void Window::InitializeWindow()
 
     glfwMakeContextCurrent(window);
 
-    if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         ErrorCallback(1, "couldn't load OpenGL");
     }
@@ -78,10 +76,10 @@ void Window::InitializeWindow()
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(OpenGLErrorCallback, 0);
 
-    if(VSyncEnabled())
+    if (VSyncEnabled())
         glfwSwapInterval(1);
 
-    if(resizeable)
+    if (resizeable)
     {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
         glfwSetFramebufferSizeCallback(window, OnWindowResize);
