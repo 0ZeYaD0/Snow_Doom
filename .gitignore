@@ -1,0 +1,3 @@
+.ymake.cache
+.vscode/
+bin/*.exe
