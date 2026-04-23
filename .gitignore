@@ -1,3 +1,5 @@
-.ymake.cache
+build/
 .vscode/
+
 bin/*.exe
+.ymake.cache
