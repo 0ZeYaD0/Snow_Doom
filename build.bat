@@ -1,1 +1,3 @@
 g++ src/main.cpp src/window/window.cpp -Llib -Iinclude -lgdi32 -lopengl32 -lglad -lglfw3dll -o bin/snow_doom.exe
+
+./bin/snow_doom.exe
