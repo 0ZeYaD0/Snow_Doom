@@ -30,6 +30,7 @@ public:
     glm::vec3 Up;
     glm::vec3 Right;
     glm::vec3 WorldUp;
+    glm::vec3 PlayerSize = glm::vec3(1.0f, 2.0f, 1.0f);
 
     float Yaw;
     float Pitch;
