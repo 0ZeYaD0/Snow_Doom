@@ -23,8 +23,11 @@ Game::Game()
 
     // --- obj test
     loaded_meshes = objloader::LoadModel("res/models/snowman.obj");
-    if (!loaded_meshes.empty())
-        entities.push_back(Entity(&loaded_meshes[0]));
+
+    for (size_t i = 0; i < loaded_meshes.size(); i++)
+    {
+        entities.push_back(Entity(&loaded_meshes[i]));
+    }
 }
 
 Game::~Game()
@@ -36,14 +39,22 @@ void Game::Run()
 {
     while (!WindowShouldClose())
     {
+        // 1. Reset input single-frame states (deltas, key down/up)
+        Input::Update();
 
-        // delta time
+        // 2. Poll OS events. This fires your Input callbacks to get the new mouse position!
+        glfwPollEvents();
+
+        // 3. Calculate delta time
         f32 current_frame = static_cast<f32>(glfwGetTime());
         delta_time = current_frame - last_frame;
         last_frame = current_frame;
 
+        // 4. Process the freshly gathered input and update game
         ProcessInput();
         Update();
+
+        // 5. Draw the frame
         Render();
     }
 }
@@ -114,7 +125,6 @@ void Game::Render()
     }
 
     glfwSwapBuffers(window.GetWindow());
-    glfwPollEvents();
 }
 
 void Game::Exit()
