@@ -1,6 +1,7 @@
-#include <game.h>
+#include <core/game.h>
 #include <graphics/object_loader.h>
 #include <GLFW/glfw3.h>
+#include <core/inputs.h>
 
 Game::Game()
     : delta_time(0.0f), last_frame(0.0f)
@@ -10,6 +11,7 @@ Game::Game()
     window.SetWindowTitle("SNOW DOOM");
     window.InitializeWindow();
 
+    Input::Init(window.GetWindow());
     // shader
     main_shader = new Shader("res/shaders/vertex.glsl", "res/shaders/fragment.glsl");
 
@@ -21,7 +23,7 @@ Game::Game()
 
     // --- obj test
     loaded_meshes = objloader::LoadModel("res/models/snowman.obj");
-    if(!loaded_meshes.empty())
+    if (!loaded_meshes.empty())
         entities.push_back(Entity(&loaded_meshes[0]));
 }
 
@@ -32,7 +34,8 @@ Game::~Game()
 
 void Game::Run()
 {
-    while(!WindowShouldClose()) {
+    while (!WindowShouldClose())
+    {
 
         // delta time
         f32 current_frame = static_cast<f32>(glfwGetTime());
@@ -47,12 +50,45 @@ void Game::Run()
 
 void Game::ProcessInput()
 {
-    // sike
+    // Close the game if Escape is pressed
+    if (Input::GetKey(GLFW_KEY_ESCAPE))
+    {
+        Exit();
+    }
+
+    // --- Camera Look (Mouse) ---
+    glm::vec2 mouseDelta = Input::GetMouseDelta();
+    if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f)
+    {
+        // Adjust this method name to whatever handles pitch/yaw in your camera.h
+        cam.ProcessMouseMov(mouseDelta.x, mouseDelta.y);
+    }
+
+    // --- Camera Movement (Keyboard) ---
+    // Adjust FORWARD, BACKWARD, etc., to match the enums/methods in your camera.h
+    if (Input::GetKey(GLFW_KEY_W))
+        cam.ProcessKeyboard(FORWARD, delta_time);
+
+    if (Input::GetKey(GLFW_KEY_S))
+        cam.ProcessKeyboard(BACKWARD, delta_time);
+
+    if (Input::GetKey(GLFW_KEY_A))
+        cam.ProcessKeyboard(LEFT, delta_time);
+
+    if (Input::GetKey(GLFW_KEY_D))
+        cam.ProcessKeyboard(RIGHT, delta_time);
+
+    // --- Utility ---
+    // Toggle the cursor lock on/off with TAB (useful for debugging/closing)
+    if (Input::GetKeyDown(GLFW_KEY_TAB))
+    {
+        Input::ToggleCursor(window.GetWindow());
+    }
 }
 
 void Game::Update()
 {
-    for(auto &entity : entities)
+    for (auto &entity : entities)
     {
         entity.Update(delta_time);
     }
@@ -72,7 +108,8 @@ void Game::Render()
 
     main_shader->SetVec4("col", 1.0f, 0.5f, 0.2f, 1.0f);
 
-    for(const auto &entity : entities) {
+    for (const auto &entity : entities)
+    {
         entity.Draw(*main_shader);
     }
 
