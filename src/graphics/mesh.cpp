@@ -10,10 +10,15 @@ Mesh::Mesh(const vector<Vertex> &vertices, const vector<u32> &indices)
 
     vbo = new VBO(vertices.data(), vertices.size() * sizeof(Vertex));
     ebo = new EBO(indices.data(), indices.size() * sizeof(u32));
-
-    vao->LinkAttrib(*vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void *) 0);
-    vao->LinkAttrib(*vbo, 1, 2, GL_FLOAT, sizeof(Vertex), (void *) offsetof(Vertex, tex_uv));
-    vao->LinkAttrib(*vbo, 2, 3, GL_FLOAT, sizeof(Vertex), (void *) offsetof(Vertex, normal));
+    
+    // location 0: position
+    vao->LinkAttrib(*vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
+    // location 1: normal
+    vao->LinkAttrib(*vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+    // location 2: tex_uv
+    vao->LinkAttrib(*vbo, 2, 2, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, tex_uv));
+    // location 3: color
+    vao->LinkAttrib(*vbo, 3, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, color));
 
     vao->Unbind();
     vbo->Unbind();

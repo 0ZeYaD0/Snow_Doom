@@ -22,11 +22,15 @@ Game::Game()
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
     // --- obj test
-    loaded_meshes = objloader::LoadModel("res/models/snowman.obj");
+    loaded_meshes = objloader::LoadModel("res/models/cottage_obj.obj");
 
     for (size_t i = 0; i < loaded_meshes.size(); i++)
     {
         entities.push_back(Entity(&loaded_meshes[i]));
+        
+        // scale down and move back
+        entities.back().transform.scale = glm::vec3(0.2f);
+        entities.back().transform.position = glm::vec3(0.0f, -1.0f, -5.0f);
     }
 }
 
