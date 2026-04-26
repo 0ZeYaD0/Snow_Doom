@@ -1,21 +1,15 @@
-#include <iostream>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <vector>
-#include <cmath>
-#include <fstream>
-#include <sstream>
-#include <string>
+#include <core/game.h>
 
-#include <window/window.h>
-#include <player/camera.h>
-#include <core/inputs.h>
+i32 main()
+{
+    Game *game = new Game();
 
-using namespace std;
+    game->Run();
 
+    game->Exit();
+}
+
+/*
 // --- Global State ---
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
@@ -321,3 +315,5 @@ int main()
 
     return 0;
 }
+
+*/
