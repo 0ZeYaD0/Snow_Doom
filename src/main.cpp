@@ -111,6 +111,7 @@ int main()
         -0.5f,
         -0.5f,
         -0.5f,
+
         -0.5f,
         -0.5f,
         0.5f,
@@ -129,6 +130,7 @@ int main()
         -0.5f,
         -0.5f,
         0.5f,
+
         -0.5f,
         0.5f,
         0.5f,
@@ -147,6 +149,7 @@ int main()
         -0.5f,
         0.5f,
         0.5f,
+
         0.5f,
         0.5f,
         0.5f,
@@ -165,6 +168,7 @@ int main()
         0.5f,
         0.5f,
         0.5f,
+
         -0.5f,
         -0.5f,
         -0.5f,
@@ -183,6 +187,7 @@ int main()
         -0.5f,
         -0.5f,
         -0.5f,
+
         -0.5f,
         0.5f,
         -0.5f,
@@ -223,9 +228,13 @@ int main()
     // --- Jump Physics Variables ---
     float yVelocity = 0.0f;
     float gravity = -15.0f;
-    float jumpForce = 6.0f;
+    float jumpForce = 10.0f;
     float groundLevel = camera.Position.y; // Assume starting height is the floor
     bool isJumping = false;
+
+    // --- NEW: Box Collider Setup ---
+    // Since the vertices above range from -0.5 to 0.5, the cube is 1x1x1 and centered at 0,0,0.
+    AABB boxCollider = AABB::fromPosSize(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
     while (!win.WindowShouldClose())
     {
@@ -291,6 +300,12 @@ int main()
                 yVelocity = 0.0f;
             }
         }
+
+        // --- NEW: Apply AABB Collisions ---
+        // This will check the camera's attempted position against the orange cube.
+        // If the player walks into it, or jumps and lands on it, they will be pushed out.
+        if (Physics::resolveCollision(camera.Position, camera.PlayerSize, boxCollider))
+            std::cout << "Collide\n";
 
         // ==========================================
         // 5. RENDERING
