@@ -22,7 +22,6 @@ public:
     void Exit();
 
 private:
-
     void ProcessInput();
     void Update();
     void Render();
