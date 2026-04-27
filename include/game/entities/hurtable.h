@@ -2,6 +2,9 @@
 
 #include <engine/core/defines.h>
 
+#include <functional>
+using std::function;
+
 class Hurtable
 {
 private:
@@ -9,17 +12,25 @@ private:
     f32 curr_hp;
 
 public:
+
+    function<void()> on_death;
+    function<void(f32)> on_dmg_taken;
+
     Hurtable(f32 max_hp) : max_hp(max_hp), curr_hp(max_hp) {}
-    virtual ~Hurtable() = default;
 
-    virtual void TakeDmg(f32 amount);
-    virtual void Heal(f32 amount);
+    void TakeDmg(f32 amt);
+    void Heal(f32 amt);
 
-    f32 GetCurrHP();
-    f32 GetMaxHP(f32 amount);
-    bool IsDead() const { return curr_hp; }
+    f32 GetCurrHP() const { return curr_hp; }
+    
+    f32 MaxHP(f32 amt = -1) {
+        if(amt == -1)
+            return max_hp;
+        else
+            max_hp = amt;
 
-protected:
-    virtual void OnDmgTaken(f32 dmg_amount) {}
-    virtual void OnDeath() {}
+        return -1;
+    }
+
+    bool IsDead() const { return curr_hp <= 0.0f; }
 };

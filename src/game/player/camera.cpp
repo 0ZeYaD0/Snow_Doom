@@ -6,7 +6,7 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
       MouseSens(CameraDefaults::SENS),
       Zoom(CameraDefaults::ZOOM)
 {
-    Position = position;
+    position = position;
     WorldUp = up;
     Yaw = yaw;
     Pitch = pitch;
@@ -19,7 +19,7 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
       MouseSens(CameraDefaults::SENS),
       Zoom(CameraDefaults::ZOOM)
 {
-    Position = glm::vec3(posX, posY, posZ);
+    position = glm::vec3(posX, posY, posZ);
     WorldUp = glm::vec3(upX, upY, upZ);
     Yaw = yaw;
     Pitch = pitch;
@@ -28,7 +28,7 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
 
 glm::mat4 Camera::GetViewMat() const
 {
-    return glm::lookAt(Position, Position + Front, Up);
+    return glm::lookAt(position, position + Front, Up);
 }
 
 glm::mat4 Camera::GetProjectionMat(float aspectRatio, float nearPlane, float farPlane) const
@@ -40,17 +40,17 @@ void Camera::ProcessKeyboard(CameraMovements direction, float deltaTime)
 {
     float velocity = MovementSpeed * deltaTime;
     if (direction == CameraMovements::FORWARD)
-        Position += Front * velocity;
+        position += Front * velocity;
     if (direction == CameraMovements::BACKWARD)
-        Position -= Front * velocity;
+        position -= Front * velocity;
     if (direction == CameraMovements::LEFT)
-        Position -= Right * velocity;
+        position -= Right * velocity;
     if (direction == CameraMovements::RIGHT)
-        Position += Right * velocity;
+        position += Right * velocity;
     if (direction == CameraMovements::UP)
-        Position += Up * velocity;
+        position += Up * velocity;
     if (direction == CameraMovements::DOWN)
-        Position -= Up * velocity;
+        position -= Up * velocity;
 }
 
 void Camera::ProcessMouseMov(float xoffset, float yoffset, bool constrainPitch)

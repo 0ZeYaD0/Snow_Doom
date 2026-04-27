@@ -5,7 +5,8 @@
 #include <engine/window/window.h>
 #include <game/player/camera.h>
 #include <engine/graphics/shader.h>
-#include <game/entities/entity.h>
+#include <game/entities/player.h>
+#include <engine/physics/aabb.h>
 
 #include <vector>
 using std::vector;
@@ -26,7 +27,8 @@ private:
     void Update();
     void Render();
 
-    Camera cam;
+    Player *player;
+    vector<AABB> level_colliders;
     Window window;
 
     f32 delta_time;
@@ -35,5 +37,6 @@ private:
     Shader *main_shader;
 
     vector<Mesh> loaded_meshes;
+    vector<Mesh> floor_meshes;
     vector<Entity> entities;
 };
