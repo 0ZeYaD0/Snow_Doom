@@ -5,7 +5,7 @@
 #include <window/window.h>
 #include <player/camera.h>
 #include <graphics/shader.h>
-#include <graphics/entity.h>
+#include <entities/entity.h>
 
 #include <vector>
 using std::vector;
@@ -22,7 +22,6 @@ public:
     void Exit();
 
 private:
-
     void ProcessInput();
     void Update();
     void Render();
