@@ -19,7 +19,7 @@ project: snow_doom {
     kind: exe
     language: cpp
     src: [ "src/**/*.cpp"]
-    inc: [ "include" ]
+    inc: [ "include", "vendor" ]
     libdirs: [ "lib" ]
 
     links: [ opengl32, gdi32, glfw3dll, glad ]

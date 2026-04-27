@@ -1,4 +1,4 @@
-#include <core/game.h>
+#include <game/core/game.h>
 
 i32 main()
 {
