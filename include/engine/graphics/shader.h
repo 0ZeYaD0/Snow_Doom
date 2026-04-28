@@ -13,15 +13,15 @@ class Shader
 public:
     u32 ID;
 
-    Shader(const string& vertex_path, const string& fragment_path);
+    Shader(const string &vertex_path, const string &fragment_path);
     ~Shader();
 
     void Use() const;
-    void SetMat4(const string &name, const glm::mat4& mat) const;
+    void SetMat4(const string &name, const glm::mat4 &mat) const;
+    void SetFloat(const string &name, f32 value) const;
     void SetVec4(const string &name, f32 x, f32 y, f32 z, f32 w) const;
 
 private:
     string LoadShaderSource(const string &path);
     u32 CompileShader(GLenum type, const string &source);
-
 };

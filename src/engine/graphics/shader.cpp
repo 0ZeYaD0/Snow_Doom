@@ -23,7 +23,8 @@ Shader::Shader(const string &vertex_path, const string &fragment_path)
 
     i32 success;
     glGetProgramiv(ID, GL_LINK_STATUS, &success);
-    if(!success) {
+    if (!success)
+    {
         char info_log[1024];
         glGetProgramInfoLog(ID, 1024, nullptr, info_log);
         throw std::runtime_error(string("shader linking failed: ") + info_log);
@@ -53,10 +54,16 @@ void Shader::SetVec4(const string &name, f32 x, f32 y, f32 z, f32 w) const
     glUniform4f(glGetUniformLocation(ID, name.c_str()), x, y, z, w);
 }
 
+void Shader::SetFloat(const string &name, f32 value) const
+{
+    glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+}
+
 string Shader::LoadShaderSource(const string &path)
 {
     std::ifstream file(path);
-    if(!file) throw std::runtime_error("failed to open shader file" + path);
+    if (!file)
+        throw std::runtime_error("failed to open shader file" + path);
 
     std::stringstream buffer;
     buffer << file.rdbuf();
@@ -74,7 +81,8 @@ u32 Shader::CompileShader(GLenum type, const string &source)
 
     i32 success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if(!success) {
+    if (!success)
+    {
         char info_log[1024];
         glGetShaderInfoLog(shader, 1024, nullptr, info_log);
         throw std::runtime_error(string("shader compilation failed: ") + info_log);

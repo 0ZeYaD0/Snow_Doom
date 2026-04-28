@@ -17,6 +17,12 @@ class Player : public Entity
 public:
     Hurtable health;
     Camera cam;
+    // Dashs
+    const f32 DASH_SPEED = 35.0f;
+    const int MAX_DASH_CHARGES = 3;
+    int dash_charges = 3;
+    const f32 DASH_RECHARGE_TIME = 2.0f;
+    f32 dash_recharge_timer = 0.0f;
 
     glm::vec3 velocity{0.0f};
     bool is_grounded = false;
@@ -27,7 +33,6 @@ public:
     void UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles);
 
 private:
-
     void HandleInput(f32 delta_time);
     void ApplyFriction(f32 delta_time);
     void Accelerate(glm::vec3 wish_dir, f32 wish_speed, f32 accel, f32 dt);

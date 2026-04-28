@@ -27,6 +27,9 @@ private:
     void Update();
     void Render();
 
+    void InitUI();
+    void RenderUI();
+
     Player *player;
     vector<AABB> level_colliders;
     Window window;
@@ -35,6 +38,9 @@ private:
     f32 last_frame;
 
     Shader *main_shader;
+
+    Shader *ui_shader;
+    u32 ui_VAO, ui_VBO;
 
     vector<Mesh> loaded_meshes;
     vector<Mesh> floor_meshes;

@@ -5,7 +5,8 @@ Player::Player(glm::vec3 spawn_pos)
 {
     transform.position = spawn_pos;
 
-    health.on_death = []() -> void {
+    health.on_death = []() -> void
+    {
         // TODO: dieee
         return;
     };
@@ -13,6 +14,22 @@ Player::Player(glm::vec3 spawn_pos)
 
 void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles)
 {
+    if (dash_charges < MAX_DASH_CHARGES)
+    {
+        dash_recharge_timer += delta_time;
+
+        // Fix 1: Check the TIMER, not the charges
+        if (dash_recharge_timer >= DASH_RECHARGE_TIME)
+        {
+            dash_charges++;
+            dash_recharge_timer = 0.0f;
+        }
+    }
+    else
+    {
+        // Keep timer clean only when we are already at max charges
+        dash_recharge_timer = 0.0f;
+    }
     // mouse
     glm::vec2 mouse_delta = Input::GetMouseDelta();
     cam.ProcessMouseMov(mouse_delta.x, mouse_delta.y);
@@ -21,7 +38,7 @@ void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles)
     HandleInput(delta_time);
 
     // gravity
-    if(!is_grounded)
+    if (!is_grounded)
         velocity.y -= 25.0f * delta_time;
 
     // velocity
@@ -29,13 +46,13 @@ void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles)
 
     // resolve collisions
     is_grounded = false;
-    for(const auto &obs : obstacles)
+    for (const auto &obs : obstacles)
     {
         glm::vec3 old_pos = transform.position;
 
-        if(Physics::resolveCollision(transform.position, player_size, obs))
+        if (Physics::resolveCollision(transform.position, player_size, obs))
         {
-            if(transform.position.y > old_pos.y)
+            if (transform.position.y > old_pos.y)
             {
                 is_grounded = true;
                 velocity.y = 0.0f;
@@ -55,14 +72,33 @@ void Player::HandleInput(f32 delta_time)
 {
     glm::vec3 wish_dir(0.0f);
 
-    if (Input::GetKey(GLFW_KEY_W)) wish_dir += cam.Front;
-    if (Input::GetKey(GLFW_KEY_S)) wish_dir -= cam.Front;
-    if (Input::GetKey(GLFW_KEY_D)) wish_dir += cam.Right;
-    if (Input::GetKey(GLFW_KEY_A)) wish_dir -= cam.Right;
+    if (Input::GetKey(GLFW_KEY_W))
+        wish_dir += cam.Front;
+    if (Input::GetKey(GLFW_KEY_S))
+        wish_dir -= cam.Front;
+    if (Input::GetKey(GLFW_KEY_D))
+        wish_dir += cam.Right;
+    if (Input::GetKey(GLFW_KEY_A))
+        wish_dir -= cam.Right;
 
     wish_dir.y = 0.0f;
-    if(glm::length(wish_dir) > 0.0f)
+    if (glm::length(wish_dir) > 0.0f)
         wish_dir = glm::normalize(wish_dir);
+    if (Input::GetKeyDown(GLFW_KEY_LEFT_SHIFT) && dash_charges > 0 && glm::length(wish_dir) > 0.0f)
+    {
+        // Apply velocity
+        velocity.x = wish_dir.x * DASH_SPEED;
+        velocity.z = wish_dir.z * DASH_SPEED;
+
+        if (is_grounded)
+        {
+            velocity.y = 2.0f;
+            is_grounded = false;
+        }
+
+        dash_charges--;
+        dash_recharge_timer = 0.0f;
+    }
 
     if (Input::GetKeyDown(GLFW_KEY_SPACE) && is_grounded)
     {
@@ -77,18 +113,18 @@ void Player::HandleInput(f32 delta_time)
     }
     else
     {
-        Accelerate(wish_dir, 2.0f, 2.0f, delta_time);
+        Accelerate(wish_dir, 15.0f, 2.0f, delta_time);
     }
-
 }
 
 void Player::ApplyFriction(f32 dt)
 {
     glm::vec3 flat_vel = velocity;
-    flat_vel.y = 0.0f;
+    flat_vel.y = 0.8f;
     f32 speed = glm::length(flat_vel);
 
-    if(speed < 0.1f) {
+    if (speed < 0.1f)
+    {
         velocity.x = 0, velocity.z = 0;
         return;
     }
@@ -104,12 +140,14 @@ void Player::ApplyFriction(f32 dt)
 void Player::Accelerate(glm::vec3 wish_dir, f32 wish_speed, f32 accel, f32 dt)
 {
     f32 curr_spd = glm::dot(velocity, wish_dir);
-    f32 add_spd  = wish_speed - curr_spd;
+    f32 add_spd = wish_speed - curr_spd;
 
-    if(add_spd <= 0) return;
+    if (add_spd <= 0)
+        return;
 
     f32 accel_spd = accel * dt * wish_speed;
-    if(accel_spd > add_spd) accel_spd = add_spd;
+    if (accel_spd > add_spd)
+        accel_spd = add_spd;
 
     velocity += accel_spd * wish_dir;
 }
