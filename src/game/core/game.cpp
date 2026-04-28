@@ -197,8 +197,6 @@ void Game::RenderUI()
         ui_shader->SetVec4("bg_color", 0.2f, 0.2f, 0.2f, 1.0f); // Dark Gray
         ui_shader->SetFloat("fill_amount", fill);
 
-        std::cout << fill << std::endl;
-
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
