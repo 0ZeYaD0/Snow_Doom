@@ -7,6 +7,15 @@
 
 #include <engine/graphics/mesh.h>
 #include <engine/graphics/shader.h>
+#include <game/entities/hurtable.h>
+
+enum class CollisionTag
+{
+    DEFAULT = 0,
+    ENVIRONMENT,
+    PLAYER,
+    ENEMY
+};
 
 class Transform
 {
@@ -36,8 +45,10 @@ class Entity
 public:
     Transform transform;
     Mesh *mesh;
+    CollisionTag tag = CollisionTag::DEFAULT;
+    Hurtable *health = nullptr;
 
-    Entity(Mesh *mesh) : mesh(mesh) {}
+    Entity(Mesh *mesh, CollisionTag tag = CollisionTag::DEFAULT) : mesh(mesh), tag(tag) {}
 
     virtual void Update(f32 delta_time) {}
 

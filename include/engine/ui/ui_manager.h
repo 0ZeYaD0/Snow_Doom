@@ -2,7 +2,7 @@
 
 #include <engine/graphics/shader.h>
 #include <engine/window/window.h>
-#include <game/entities/player.h>
+#include <game/player/player.h>
 
 class UIManager
 {

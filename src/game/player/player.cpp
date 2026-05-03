@@ -1,9 +1,15 @@
-#include <game/entities/player.h>
+#include <game/player/player.h>
+
+#include <game/player/weapon/AK47.h>
 
 Player::Player(glm::vec3 spawn_pos)
     : Entity(nullptr), health(100.0f), cam(spawn_pos)
 {
     transform.position = spawn_pos;
+
+    this->Entity::health = &this->health;
+
+    current_weapon = new AK47();
 
     health.on_death = []() -> void
     {
@@ -12,13 +18,18 @@ Player::Player(glm::vec3 spawn_pos)
     };
 }
 
-void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles)
+Player::~Player()
+{
+    if(current_weapon)
+        delete current_weapon;
+}
+
+void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<Entity> &entities)
 {
     if (dash_charges < MAX_DASH_CHARGES)
     {
         dash_recharge_timer += delta_time;
 
-        // Fix 1: Check the TIMER, not the charges
         if (dash_recharge_timer >= DASH_RECHARGE_TIME)
         {
             dash_charges++;
@@ -27,15 +38,15 @@ void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles)
     }
     else
     {
-        // Keep timer clean only when we are already at max charges
         dash_recharge_timer = 0.0f;
     }
+
     // mouse
     glm::vec2 mouse_delta = Input::GetMouseDelta();
     cam.ProcessMouseMov(mouse_delta.x, mouse_delta.y);
 
     // movement
-    HandleInput(delta_time);
+    HandleInput(delta_time, entities);
 
     // gravity
     if (!is_grounded)
@@ -68,7 +79,7 @@ void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles)
     cam.position = transform.position + glm::vec3(0.0f, 0.8f, 0.0f);
 }
 
-void Player::HandleInput(f32 delta_time)
+void Player::HandleInput(f32 delta_time, vector<Entity> &entities)
 {
     glm::vec3 wish_dir(0.0f);
 
@@ -84,6 +95,7 @@ void Player::HandleInput(f32 delta_time)
     wish_dir.y = 0.0f;
     if (glm::length(wish_dir) > 0.0f)
         wish_dir = glm::normalize(wish_dir);
+        
     if (Input::GetKeyDown(GLFW_KEY_LEFT_SHIFT) && dash_charges > 0 && glm::length(wish_dir) > 0.0f)
     {
         // Apply velocity
@@ -114,6 +126,20 @@ void Player::HandleInput(f32 delta_time)
     else
     {
         Accelerate(wish_dir, 15.0f, 2.0f, delta_time);
+    }
+
+
+    // --- pew pew
+
+    if(current_weapon)
+        current_weapon->UpdateCooldown(delta_time);
+
+    if(Input::GetMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
+    {
+        if(current_weapon && current_weapon->Fire(cam.position, cam.GetFront(), entities))
+        {
+            cam.ProcessMouseMov(0.0f, 5.0f);
+        }
     }
 }
 

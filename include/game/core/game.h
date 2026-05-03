@@ -5,7 +5,7 @@
 #include <engine/window/window.h>
 #include <game/player/camera.h>
 #include <engine/graphics/shader.h>
-#include <game/entities/player.h>
+#include <game/player/player.h>
 #include <engine/physics/aabb.h>
 
 #include <engine/ui/ui_manager.h>

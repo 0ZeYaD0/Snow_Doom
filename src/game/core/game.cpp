@@ -91,7 +91,7 @@ void Game::ProcessInput()
 
 void Game::Update()
 {
-    player->UpdatePlayer(delta_time, level_colliders);
+    player->UpdatePlayer(delta_time, level_colliders, entities);
 
     for (auto &entity : entities)
     {

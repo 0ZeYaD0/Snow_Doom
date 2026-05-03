@@ -7,6 +7,7 @@
 #include <game/player/camera.h>
 #include <engine/physics/physics.h>
 #include <engine/core/input.h>
+#include <game/player/weapon/weapon.h>
 
 #include <vector>
 #include <iostream>
@@ -17,6 +18,8 @@ class Player : public Entity
 public:
     Hurtable health;
     Camera cam;
+    Weapon *current_weapon = nullptr;
+
     // Dashs
     const f32 DASH_SPEED = 35.0f;
     const int MAX_DASH_CHARGES = 3;
@@ -29,11 +32,12 @@ public:
     glm::vec3 player_size{1.0f, 2.0f, 1.0f};
 
     Player(glm::vec3 spawn_pos);
+    ~Player();
 
-    void UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles);
+    void UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<Entity> &entities);
 
 private:
-    void HandleInput(f32 delta_time);
+    void HandleInput(f32 delta_time, vector<Entity> &entities);
     void ApplyFriction(f32 delta_time);
     void Accelerate(glm::vec3 wish_dir, f32 wish_speed, f32 accel, f32 dt);
 };

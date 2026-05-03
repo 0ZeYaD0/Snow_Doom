@@ -53,6 +53,8 @@ public:
 
     glm::mat4 GetProjectionMat(float aspectRatio, float nearPlane = 0.1f, float farPlane = 100.0f) const;
 
+    glm::vec3 GetFront() const { return Front; }
+
     void ProcessKeyboard(CameraMovements dir, float deltaTime);
 
     void ProcessMouseMov(float xoffset, float yoffset, bool constrain = true);
