@@ -8,6 +8,8 @@
 #include <game/entities/player.h>
 #include <engine/physics/aabb.h>
 
+#include <engine/ui/ui_manager.h>
+
 #include <vector>
 using std::vector;
 
@@ -27,9 +29,6 @@ private:
     void Update();
     void Render();
 
-    void InitUI();
-    void RenderUI();
-
     Player *player;
     vector<AABB> level_colliders;
     Window window;
@@ -39,10 +38,9 @@ private:
 
     Shader *main_shader;
 
-    Shader *ui_shader;
-    u32 ui_VAO, ui_VBO;
-
     vector<Mesh> loaded_meshes;
     vector<Mesh> floor_meshes;
     vector<Entity> entities;
+
+    UIManager ui_manager;
 };
