@@ -48,6 +48,9 @@ void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<
     // movement
     HandleInput(delta_time, entities);
 
+    // cam tilt
+    UpdateCameraTilt(delta_time);
+
     // gravity
     if (!is_grounded)
         velocity.y -= 25.0f * delta_time;
@@ -75,8 +78,11 @@ void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<
         }
     }
 
-    // cam
-    cam.position = transform.position + glm::vec3(0.0f, 0.8f, 0.0f);
+    if(head_bob)
+        HeadBob(delta_time);
+    else
+        cam.position = transform.position
+            + glm::vec3(0.0f, 0.8f, 0.0f);
 }
 
 void Player::HandleInput(f32 delta_time, vector<Entity> &entities)
@@ -188,4 +194,56 @@ void Player::Accelerate(glm::vec3 wish_dir, f32 wish_speed, f32 accel, f32 dt)
         accel_spd = add_spd;
 
     velocity += accel_spd * wish_dir;
+}
+
+void Player::UpdateCameraTilt(f32 delta_time)
+{
+    f32 move_right = Input::GetAxis("MoveRight");
+    f32 target_roll = 0.0f;
+
+    if(move_right != 0.0f)
+        target_roll = move_right * max_tilt;
+
+    f32 t = glm::clamp(tilt_spd * delta_time, 0.0f, 1.0f);
+    cam.Roll = glm::mix(cam.Roll, target_roll, t);
+    cam.UpdateCameraVectors();
+}
+
+void Player::HeadBob(f32 delta_time)
+{
+    glm::vec3 flat_vel = velocity;
+    flat_vel.y = 0.0f;
+    f32 spd = glm::length(flat_vel);
+
+    f32 target_amp = 0.0f;
+    f32 target_freq = 0.0f;
+
+    if(spd > 0.1f)
+    {
+        target_amp = 0.15f;
+        target_freq = 12.0f;
+    }
+    else
+    {
+        target_amp = 0.02f;
+        target_freq = 2.0f;
+    }
+
+    if(!is_grounded && abs(velocity.y) > 1.0f)
+        target_amp = 0.0f;
+
+    current_bob_amp = glm::mix(
+        current_bob_amp, target_amp,
+        10.0 * delta_time
+    );
+
+    bob_phase += target_freq * delta_time;
+
+    if(bob_phase > 2 * glm::pi<f32>())
+        bob_phase -= 2 * glm::pi<f32>();
+
+    f32 bob_offset_y = sin(bob_phase) * current_bob_amp;
+    
+    cam.position = transform.position
+        + glm::vec3(0.0f, 0.8f + bob_offset_y, 0.0f);
 }

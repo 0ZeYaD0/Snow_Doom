@@ -80,6 +80,11 @@ void Camera::UpdateCameraVectors()
     front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
     Front = glm::normalize(front);
 
-    Right = glm::normalize(glm::cross(Front, WorldUp));
-    Up = glm::normalize(glm::cross(Right, Front));
+    glm::vec3 right_base = glm::normalize(glm::cross(Front, WorldUp));
+    glm::vec3 up_base = glm::normalize(glm::cross(right_base, Front));
+
+    glm::mat4 roll_mat = glm::rotate(glm::mat4(1.0f), glm::radians(Roll), Front);
+
+    Right = glm::normalize(roll_mat * glm::vec4(right_base, 1.0f));
+    Up = glm::normalize(roll_mat * glm::vec4(up_base, 1.0f));
 }

@@ -15,6 +15,16 @@ using std::vector;
 
 class Player : public Entity
 {
+private:
+    // cam tilt
+    f32 max_tilt = 1.2f;
+    f32 tilt_spd = 10.0f;
+
+    // head bob
+    f32 bob_phase = 0.0f;
+    f32 current_bob_amp = 0.0f;
+    bool head_bob = true;
+
 public:
     Hurtable health;
     Camera cam;
@@ -40,4 +50,7 @@ private:
     void HandleInput(f32 delta_time, vector<Entity> &entities);
     void ApplyFriction(f32 delta_time);
     void Accelerate(glm::vec3 wish_dir, f32 wish_speed, f32 accel, f32 dt);
+
+    void UpdateCameraTilt(f32 delta_time);
+    void HeadBob(f32 delta_time);
 };

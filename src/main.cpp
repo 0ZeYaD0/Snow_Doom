@@ -2,7 +2,6 @@
 
 /*
     TODO:
-    - better input handling
     - player death
     - fix ui
     - polish movement

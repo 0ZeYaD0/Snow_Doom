@@ -34,6 +34,7 @@ public:
 
     float Yaw;
     float Pitch;
+    float Roll;
 
     float MovementSpeed;
     float MouseSens;
@@ -59,6 +60,5 @@ public:
 
     void ProcessMouseMov(float xoffset, float yoffset, bool constrain = true);
 
-private:
     void UpdateCameraVectors();
 };
