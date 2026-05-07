@@ -1,13 +1,13 @@
 #include <game/player/player.h>
 
-#include <game/player/weapon/AK47.h>
+#include <game/player/weapon/banana.h>
 
 Player::Player(glm::vec3 spawn_pos)
     : Entity(nullptr), health(100.0f), cam(spawn_pos)
 {
     transform.position = spawn_pos;
     this->Entity::health = &this->health;
-    current_weapon = new AK47();
+    current_weapon = new Banana();
 
     health.on_death = []() -> void
     {
@@ -51,9 +51,9 @@ void Player::UpdateTimers(f32 delta_time)
         dash_recharge_timer = 0.0f;
     }
 
-    if (current_weapon)
+    if(current_weapon)
     {
-        current_weapon->UpdateCooldown(delta_time);
+        current_weapon->Update(delta_time);
     }
 }
 
@@ -116,24 +116,15 @@ void Player::HandleInput(f32 delta_time, vector<Entity> &entities)
 
     // --- pew pew ---
     if (current_weapon)
-        current_weapon->UpdateCooldown(delta_time);
-
-    if (Input::GetActionDown("Fire"))
     {
-        std::cout << "[INPUT] 'Fire' action triggered!" << std::endl;
-
-        // 2. Checks if the AK47 successfully fired (cooldown is ready, has ammo, etc.)
-        if (current_weapon && current_weapon->Fire(cam.position, cam.GetFront(), entities))
+        if (Input::GetAction("Fire"))
         {
-            std::cout << "[WEAPON] BANG! AK47 fired. Applying recoil." << std::endl;
+            if (current_weapon->Fire(cam.position, cam.Front, entities))
+                cam.ProcessMouseMov(0.0f, current_weapon->GetRecoil());
+        }
 
-            // This is your recoil!
-            cam.ProcessMouseMov(0.0f, 5.0f);
-        }
-        else
-        {
-            std::cout << "[WEAPON] Click... weapon not ready (cooldown)." << std::endl;
-        }
+        if (Input::GetActionDown("Reload"))
+            current_weapon->Reload();
     }
 }
 

@@ -12,6 +12,7 @@ enum class KeyCode : int
     A = GLFW_KEY_A,
     S = GLFW_KEY_S,
     D = GLFW_KEY_D,
+    R = GLFW_KEY_R,
     Space = GLFW_KEY_SPACE,
     Esc = GLFW_KEY_ESCAPE,
     LeftShift = GLFW_KEY_LEFT_SHIFT,

@@ -47,6 +47,9 @@ void UIManager::Render(const Window &window, const Player *player)
 
     glDisable(GL_DEPTH_TEST);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     ui_shader->Use();
 
     glm::mat4 projection = glm::ortho(0.0f, (f32)window.GetWidth(), (f32)window.GetHeight(), 0.0f);
@@ -55,10 +58,58 @@ void UIManager::Render(const Window &window, const Player *player)
     glBindVertexArray(VAO);
 
     DashCounterUI(window, player);
+    DrawGun(window, player);
 
     glBindVertexArray(0);
 
-    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST); 
+}
+
+void UIManager::DrawSprite(Texture* texture, glm::vec2 position, glm::vec2 size, glm::vec4 tint)
+{
+    ui_shader->Use();
+    
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(position, 0.0f));  
+    model = glm::scale(model, glm::vec3(size, 1.0f)); 
+
+    ui_shader->SetMat4("model", model);
+    ui_shader->SetVec4("color", tint.r, tint.g, tint.b, tint.a);
+    ui_shader->SetInt("use_texture", 1);
+    ui_shader->SetInt("image", 0);
+
+    texture->Bind(0);
+
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    ui_shader->SetInt("use_texture", 0);
+    texture->Unbind();
+}
+
+void UIManager::DrawSpriteFrame(Texture* texture, glm::vec2 position, glm::vec2 size, int current_frame, int total_frames, glm::vec4 tint)
+{
+    ui_shader->Use();
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(position, 0.0f));
+    model = glm::scale(model, glm::vec3(size, 1.0f));
+
+    ui_shader->SetMat4("model", model);
+    ui_shader->SetVec4("color", tint.r, tint.g, tint.b, tint.a);
+    ui_shader->SetInt("use_texture", 1);
+
+    f32 frame_width = 1.0f / static_cast<f32>(total_frames);
+    ui_shader->SetVec2("uv_scale", frame_width, 1.0f);
+    ui_shader->SetVec2("uv_offset", current_frame * frame_width, 0.0f);
+
+    texture->Bind(0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    
+    ui_shader->SetVec2("uv_scale", 1.0f, 1.0f);
+    ui_shader->SetVec2("uv_offset", 0.0f, 0.0f);
+    ui_shader->SetInt("use_texture", 0);
+    texture->Unbind();
 }
 
 void UIManager::DashCounterUI(const Window &window, const Player *player)
@@ -84,6 +135,8 @@ void UIManager::DashCounterUI(const Window &window, const Player *player)
         else if (i == player->GetDashCharges())
             fill = player->GetDashRechargeTimer() / player->GetDashRechargeTime();
 
+        ui_shader->SetInt("use_texture", 0);
+
         ui_shader->SetVec4("color", 0.0f, 1.0f, 1.0f, 1.0f);
         ui_shader->SetVec4("bg_color", 0.2f, 0.2f, 0.2f, 1.0f);
         ui_shader->SetFloat("fill_amount", fill);
@@ -92,22 +145,29 @@ void UIManager::DashCounterUI(const Window &window, const Player *player)
     }
 }
 
-void UIManager::DrawSprite(Texture *texture, glm::vec2 position, glm::vec2 size, glm::vec4 tint)
+void UIManager::DrawGun(const Window &window, const Player *player)
 {
-    ui_shader->Use();
+    if(player->current_weapon && player->current_weapon->GetTexture())
+    {
+        f32 gun_width = 400.0f;
+        f32 gun_height = 400.0f;
+        
+        glm::vec2 gun_pos = glm::vec2(
+            (window.GetWidth() / 2.0f) - (gun_width / 2.0f),
+            window.GetHeight() - gun_height
+        );
 
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(position, 0.0f));
-    model = glm::scale(model, glm::vec3(size, 1.0f));
+        i32 frame = player->current_weapon->GetCurrentFrame();
+        i32 total_frames = player->current_weapon->GetTotalFrames();
 
-    ui_shader->SetMat4("model", model);
-    ui_shader->SetVec4("color", tint.r, tint.g, tint.b, tint.a);
-    ui_shader->SetFloat("use_texture", 1.0f);
-    ui_shader->SetFloat("image", 0.0f);
-
-    texture->Bind(0);
-
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    ui_shader->SetFloat("use_texture", 0.0f); // TODO:Float to int
-    texture->Unbind();
+        DrawSpriteFrame(
+            player->current_weapon->GetTexture(),
+            gun_pos,
+            glm::vec2(gun_width, gun_height),
+            frame,
+            total_frames,
+            glm::vec4(1.0f)
+        );
+    }
 }
+

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <engine/core/defines.h>
+#include <engine/graphics/texture.h>
 
 #include <glm/glm.hpp>
 
@@ -8,43 +9,60 @@
 #include <vector>
 using std::string, std::vector;
 
-class Hurtable;
 class Entity;
+
+struct WeaponAnim
+{
+    vector<i32> frames;
+    f32 time_per_frame;
+};
 
 class Weapon
 {
 protected:
-    string name;
+    f32 base_dmg;
+    f32 max_range;
+    f32 fire_rate; // in seconds
+    f32 recoil_pitch;
 
-    float basedmg;
-    float headshotmult;
-
-    float max_range;
-    float dmg_falloff;
-    float base_accuracy;
-
-    i32 ammo_in_mag;
-    i32 mag_size;
-    f32 fire_rate;
+    // ammo & reloading
+    i32 max_ammo;
+    i32 curr_ammo;
+    bool is_reloading;
+    f32 reload_time;
+    f32 reload_timer;
+    
     f32 current_cooldown;
 
+    // visuals
+    Texture *weapon_tex;
+    i32 total_frames;
+
+    // Animation State
+    WeaponAnim anim_idle;
+    WeaponAnim anim_fire;
+    WeaponAnim anim_reload;
+    
+    WeaponAnim* current_anim;
+    i32 anim_index;
+    f32 anim_timer;
+
 public:
-    Weapon(string n, float dmg, float hsMult, float range, float falloff, float acc, int mag, float rate)
-        : name(n), basedmg(dmg), headshotmult(hsMult), max_range(range), dmg_falloff(falloff), 
-          base_accuracy(acc), mag_size(mag), ammo_in_mag(mag), fire_rate(rate), current_cooldown(0.0f) {}
-          
-    virtual ~Weapon() = default;
+    Weapon(f32 dmg, f32 range, f32 rate, f32 recoil, i32 ammo, f32 rld_time, const string& texture_path, i32 frames);
+    virtual ~Weapon();
 
-    // We change Fire to return a boolean so the player knows if a shot actually happened
-    virtual bool Fire(glm::vec3 origin, glm::vec3 dir, std::vector<Entity>& entities) = 0;
+    virtual void Update(f32 delta_time);
 
-    // Call this every frame to reduce the cooldown
-    void UpdateCooldown(float dt) {
-        if (current_cooldown > 0.0f) {
-            current_cooldown -= dt;
-        }
-    }
+    // return true if fired
+    virtual bool Fire(glm::vec3 origin, glm::vec3 direction, std::vector<Entity>& entities);
 
-    float CalculateImpactDmg(float dist, bool is_headshot);
-    string GetName() const { return name; }
+    virtual void Reload();
+    int GetCurrentAmmo() const { return curr_ammo; }
+    int GetMaxAmmo() const { return max_ammo; }
+
+    f32 GetRecoil() const { return recoil_pitch; }
+    i32 GetCurrentFrame() const;
+
+    Texture *GetTexture() const { return weapon_tex; };
+    i32 GetTotalFrames() const { return total_frames; };
 };

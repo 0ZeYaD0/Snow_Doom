@@ -1,13 +1,15 @@
 #version 330 core
 layout (location = 0) in vec2 aPos;
 
-uniform mat4 projection;
-uniform mat4 model;
+out vec2 TexCoords;
 
-out vec2 localPos; // Send the local coordinates to the fragment shader
+uniform mat4 model;
+uniform mat4 projection;
 
 void main()
 {
-    localPos = aPos; // aPos is exactly 0.0 to 1.0 within our square!
+    // Pass the raw 0.0 to 1.0 position directly to the fragment shader as the UV coordinate
+    TexCoords = aPos;
+    
     gl_Position = projection * model * vec4(aPos, 0.0, 1.0);
 }

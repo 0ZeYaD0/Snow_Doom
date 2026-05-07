@@ -20,6 +20,7 @@ Game::Game()
     Input::BindAction("Jump", KeyCode::Space);
     Input::BindAction("Dash", KeyCode::LeftShift);
     Input::BindAction("Fire", MouseCode::Left);
+    Input::BindAction("Reload", KeyCode::R);
 
     Input::BindAction("ToggleUI", KeyCode::Tab);
     Input::BindAction("Quit", KeyCode::Esc);
