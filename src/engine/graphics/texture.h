@@ -11,6 +11,7 @@ public:
     u32 ID;
     i32 width, height, channels;
 
+    
     Texture(const string &filepath);
     ~Texture();
 
