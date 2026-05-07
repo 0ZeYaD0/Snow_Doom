@@ -6,8 +6,7 @@
     - fix ui
     - polish movement
         - dash effects (anime lines, etc..)
-        - camera tilt
-        - head bob
+        - refactor player variables/state (currently messy)
     - enemies
     - fix weapon fire structure
 */

@@ -68,7 +68,7 @@ void UIManager::DashCounterUI(const Window &window, const Player *player)
     f32 start_x  = 20.0f;
     f32 start_y  = window.GetHeight() - 50.0f;
 
-    for(i32 i = 0; i < player->MAX_DASH_CHARGES; i++)
+    for(i32 i = 0; i < player->GetMaxDashCharges(); i++)
     {
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(
@@ -79,13 +79,11 @@ void UIManager::DashCounterUI(const Window &window, const Player *player)
 
         ui_shader->SetMat4("model", model);
 
-        f32 fill = player->dash_recharge_timer / player->DASH_RECHARGE_TIME;
-        if(i < player->dash_charges)
+        f32 fill = 0.0f;
+        if(i < player->GetDashCharges())
             fill = 1.0f;
-        else if(i == player->dash_charges)
-            fill = player->dash_recharge_timer / player->DASH_RECHARGE_TIME;
-        else
-            fill = 0.0f;
+        else if(i == player->GetDashCharges())
+            fill = player->GetDashRechargeTimer() / player->GetDashRechargeTime();
 
         ui_shader->SetVec4("color", 0.0f, 1.0f, 1.0f, 1.0f);
         ui_shader->SetVec4("bg_color", 0.2f, 0.2f, 0.2f, 1.0f);

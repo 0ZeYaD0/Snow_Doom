@@ -6,9 +6,7 @@ Player::Player(glm::vec3 spawn_pos)
     : Entity(nullptr), health(100.0f), cam(spawn_pos)
 {
     transform.position = spawn_pos;
-
     this->Entity::health = &this->health;
-
     current_weapon = new AK47();
 
     health.on_death = []() -> void
@@ -26,6 +24,18 @@ Player::~Player()
 
 void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<Entity> &entities)
 {
+    UpdateTimers(delta_time);
+
+    UpdateMouseLook();
+    HandleInput(delta_time, entities);
+
+    UpdatePhysics(delta_time, obstacles);
+
+    UpdateCameraEffects(delta_time);
+}
+
+void Player::UpdateTimers(f32 delta_time)
+{
     if (dash_charges < MAX_DASH_CHARGES)
     {
         dash_recharge_timer += delta_time;
@@ -41,48 +51,16 @@ void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<
         dash_recharge_timer = 0.0f;
     }
 
-    // mouse
+    if (current_weapon)
+    {
+        current_weapon->UpdateCooldown(delta_time);
+    }
+}
+
+void Player::UpdateMouseLook()
+{
     glm::vec2 mouse_delta = Input::GetMouseDelta();
     cam.ProcessMouseMov(mouse_delta.x, mouse_delta.y);
-
-    // movement
-    HandleInput(delta_time, entities);
-
-    // cam tilt
-    UpdateCameraTilt(delta_time);
-
-    // gravity
-    if (!is_grounded)
-        velocity.y -= 25.0f * delta_time;
-
-    // velocity
-    transform.position += velocity * delta_time;
-
-    // resolve collisions
-    is_grounded = false;
-    for (const auto &obs : obstacles)
-    {
-        glm::vec3 old_pos = transform.position;
-
-        if (Physics::resolveCollision(transform.position, player_size, obs))
-        {
-            if (transform.position.y > old_pos.y)
-            {
-                is_grounded = true;
-                velocity.y = 0.0f;
-            }
-            else if (transform.position.y < old_pos.y && velocity.y > 0.0f)
-            {
-                velocity.y = 0.0f;
-            }
-        }
-    }
-
-    if(head_bob)
-        HeadBob(delta_time);
-    else
-        cam.position = transform.position
-            + glm::vec3(0.0f, 0.8f, 0.0f);
 }
 
 void Player::HandleInput(f32 delta_time, vector<Entity> &entities)
@@ -159,6 +137,43 @@ void Player::HandleInput(f32 delta_time, vector<Entity> &entities)
     }
 }
 
+void Player::UpdatePhysics(f32 delta_time, const vector<AABB> &obstacles)
+{
+    if (!is_grounded)
+        velocity.y -= GRAVITY_MULT * delta_time;
+
+    transform.position += velocity * delta_time;
+
+    is_grounded = false;
+    for (const auto &obs : obstacles)
+    {
+        glm::vec3 old_pos = transform.position;
+
+        if (Physics::resolveCollision(transform.position, player_size, obs))
+        {
+            if (transform.position.y > old_pos.y)
+            {
+                is_grounded = true;
+                velocity.y = 0.0f;
+            }
+            else if (transform.position.y < old_pos.y && velocity.y > 0.0f)
+            {
+                velocity.y = 0.0f;
+            }
+        }
+    }
+}
+
+void Player::UpdateCameraEffects(f32 delta_time)
+{
+    UpdateCameraTilt(delta_time);
+
+    if (head_bob)
+        HeadBob(delta_time);
+    else
+        cam.position = transform.position + glm::vec3(0.0f, CAM_Y_POS, 0.0f);
+}
+
 void Player::ApplyFriction(f32 dt)
 {
     glm::vec3 flat_vel = velocity;
@@ -201,10 +216,10 @@ void Player::UpdateCameraTilt(f32 delta_time)
     f32 move_right = Input::GetAxis("MoveRight");
     f32 target_roll = 0.0f;
 
-    if(move_right != 0.0f)
-        target_roll = move_right * max_tilt;
+    if (move_right != 0.0f)
+        target_roll = move_right * CAM_MAX_TILT;
 
-    f32 t = glm::clamp(tilt_spd * delta_time, 0.0f, 1.0f);
+    f32 t = glm::clamp(CAM_TILT_SPEED * delta_time, 0.0f, 1.0f);
     cam.Roll = glm::mix(cam.Roll, target_roll, t);
     cam.UpdateCameraVectors();
 }
@@ -218,32 +233,27 @@ void Player::HeadBob(f32 delta_time)
     f32 target_amp = 0.0f;
     f32 target_freq = 0.0f;
 
-    if(spd > 0.1f)
+    if (spd > BOB_MIN_SPEED)
     {
-        target_amp = 0.15f;
-        target_freq = 12.0f;
+        target_amp = BOB_MOVE_AMP;
+        target_freq = BOB_MOVE_FREQ;
     }
     else
     {
-        target_amp = 0.02f;
-        target_freq = 2.0f;
+        target_amp = BOB_IDLE_AMP;
+        target_freq = BOB_IDLE_FREQ;
     }
 
-    if(!is_grounded && abs(velocity.y) > 1.0f)
+    if (!is_grounded && abs(velocity.y) > FALL_VELOCITY_THRESHOLD)
         target_amp = 0.0f;
 
-    current_bob_amp = glm::mix(
-        current_bob_amp, target_amp,
-        10.0 * delta_time
-    );
-
+    current_bob_amp = glm::mix(current_bob_amp, target_amp, BOB_SMOOTHING * delta_time);
     bob_phase += target_freq * delta_time;
 
-    if(bob_phase > 2 * glm::pi<f32>())
+    if (bob_phase > 2 * glm::pi<f32>())
         bob_phase -= 2 * glm::pi<f32>();
 
     f32 bob_offset_y = sin(bob_phase) * current_bob_amp;
-    
-    cam.position = transform.position
-        + glm::vec3(0.0f, 0.8f + bob_offset_y, 0.0f);
+
+    cam.position = transform.position + glm::vec3(0.0f, CAM_Y_POS + bob_offset_y, 0.0f);
 }
