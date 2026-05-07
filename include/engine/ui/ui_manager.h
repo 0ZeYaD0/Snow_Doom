@@ -12,15 +12,17 @@ public:
     ~UIManager();
 
     void Init();
-    void Render(const Window &window, const Player *player);
-    void DrawSprite(Texture* texture, glm::vec2 position, glm::vec2 size, glm::vec4 tint);
-    void DrawSpriteFrame(Texture* texture, glm::vec2 position, glm::vec2 size, int current_frame, int total_frames, glm::vec4 tint);
 
-private:
-    void DashCounterUI(const Window &window, const Player *player);
-    void DrawGun(const Window &window, const Player *player);
-    
-private:
+    // --- State Management ---
+    void Begin(const Window &window);
+    void End();
+
+    // --- Generic Drawing Primitives ---
+    void DrawSprite(Texture* texture, glm::vec2 position, glm::vec2 size, f32 rotation = 0.0f, glm::vec4 tint = glm::vec4(1.0f));
+    void DrawSpriteFrame(Texture* texture, glm::vec2 position, glm::vec2 size, int current_frame, int total_frames, glm::vec4 tint = glm::vec4(1.0f));
+    void DrawRect(glm::vec2 position, glm::vec2 size, glm::vec4 color, glm::vec4 bg_color, f32 fill_amount, f32 rotation = 0.0f);
+
+    private:
     Shader *ui_shader;
-    u32 VAO, VBO;
+    unsigned int VAO, VBO;
 };

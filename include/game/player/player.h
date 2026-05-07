@@ -60,6 +60,8 @@ private:
     f32 current_bob_amp = 0.0f;
     bool head_bob = true;
 
+    f32 speed_lines_opacity = 0.0f;
+
 public:
     glm::vec3 velocity{0.0f};
     bool is_grounded = false;
@@ -91,6 +93,7 @@ private:
     // --- CAM ---
     void UpdateCameraTilt(f32 delta_time);
     void HeadBob(f32 delta_time);
+    void UpdateSpeedLines(f32 delta_time);
 
 public:
     // getters/setters
@@ -98,4 +101,5 @@ public:
     i32 GetMaxDashCharges() const { return MAX_DASH_CHARGES; }
     f32 GetDashRechargeTimer() const { return dash_recharge_timer; }
     f32 GetDashRechargeTime() const { return DASH_RECHARGE_TIME; }
+    f32 GetSpeedLinesOpacity() const { return speed_lines_opacity; }
 };

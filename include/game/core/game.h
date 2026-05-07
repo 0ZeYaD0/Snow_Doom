@@ -9,6 +9,7 @@
 #include <engine/physics/aabb.h>
 
 #include <engine/ui/ui_manager.h>
+#include <game/ui/playerHUD.h>
 
 #include <vector>
 using std::vector;
@@ -43,4 +44,5 @@ private:
     vector<Entity> entities;
 
     UIManager ui_manager;
+    PlayerHUD player_hud;
 };

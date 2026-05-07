@@ -30,6 +30,7 @@ Game::Game()
 
     // ui system
     ui_manager.Init();
+    player_hud.Init();
 
     // player
     player = new Player(glm::vec3(0.0f, 6.0f, 3.0f));
@@ -129,7 +130,9 @@ void Game::Render()
         entity.Draw(*main_shader);
     }
 
-    ui_manager.Render(window, player);
+    ui_manager.Begin(window);
+    player_hud.Render(ui_manager, window, player, delta_time);
+    ui_manager.End();
 
     glfwSwapBuffers(window.GetWindow());
 }

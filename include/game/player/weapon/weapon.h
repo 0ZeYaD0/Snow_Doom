@@ -65,4 +65,6 @@ public:
 
     Texture *GetTexture() const { return weapon_tex; };
     i32 GetTotalFrames() const { return total_frames; };
+
+    bool IsReloading() const { return is_reloading; }
 };

@@ -163,6 +163,8 @@ void Player::UpdateCameraEffects(f32 delta_time)
         HeadBob(delta_time);
     else
         cam.position = transform.position + glm::vec3(0.0f, CAM_Y_POS, 0.0f);
+
+    UpdateSpeedLines(delta_time);
 }
 
 void Player::ApplyFriction(f32 dt)
@@ -247,4 +249,21 @@ void Player::HeadBob(f32 delta_time)
     f32 bob_offset_y = sin(bob_phase) * current_bob_amp;
 
     cam.position = transform.position + glm::vec3(0.0f, CAM_Y_POS + bob_offset_y, 0.0f);
+}
+
+void Player::UpdateSpeedLines(f32 delta_time)
+{
+    glm::vec3 flat_vel = velocity;
+    flat_vel.y = 0.0f;
+    f32 current_speed = glm::length(flat_vel);
+
+    f32 target_opacity = 0.0f;
+    
+    if (current_speed > MAX_GROUND_SPEED + 2.0f) 
+    {
+        target_opacity = (current_speed - MAX_GROUND_SPEED) / (DASH_SPEED - MAX_GROUND_SPEED);
+        target_opacity = glm::clamp(target_opacity, 0.0f, 1.0f);
+    }
+
+    speed_lines_opacity = glm::mix(speed_lines_opacity, target_opacity, 8.0f * delta_time);
 }
