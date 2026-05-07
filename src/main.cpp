@@ -2,13 +2,17 @@
 
 /*
     TODO:
-    - player death
-    - fix ui
+    - better ui
+        - dynamic crosshair
+        - better dash counter
+        - gun info UI
+        - screen effects
     - polish movement
         - dash effects (anime lines, etc..)
-        - refactor player variables/state (currently messy)
+    - sound effects
+    - player death
     - enemies
-    - fix weapon fire structure
+    - map
 */
 
 i32 main()
