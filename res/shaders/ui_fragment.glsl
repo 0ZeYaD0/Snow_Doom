@@ -1,22 +1,22 @@
 #version 330 core
 out vec4 FragColor;
 
-in vec2 localPos; // Receive from vertex shader
+in vec2 TexCoords;
 
-uniform vec4 color;       // The "full" color (cyan)
-uniform vec4 bg_color;    // The "empty" color (dark gray)
-uniform float fill_amount; // 0.0 (empty) to 1.0 (full)
+uniform sampler2D image;
+uniform vec4 color;
+uniform bool use_texture; // Flag to switch modes
 
 void main()
 {
-    // localPos.y goes from 0.0 (top) to 1.0 (bottom).
-    // We flip it so the fill rises from the bottom to the top.
-    if ((1.0 - localPos.y) <= fill_amount) 
+    if (use_texture)
     {
-        FragColor = color;
-    } 
-    else 
+        vec4 texColor = texture(image, TexCoords);
+        if(texColor.a < 0.1) discard; // Discard transparent pixels
+        FragColor = texColor * color; // Multiply by color for tinting
+    }
+    else
     {
-        FragColor = bg_color;
+        FragColor = color; // Solid color for standard shapes
     }
 }
