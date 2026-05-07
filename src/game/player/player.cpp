@@ -20,7 +20,7 @@ Player::Player(glm::vec3 spawn_pos)
 
 Player::~Player()
 {
-    if(current_weapon)
+    if (current_weapon)
         delete current_weapon;
 }
 
@@ -81,24 +81,24 @@ void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<
 
 void Player::HandleInput(f32 delta_time, vector<Entity> &entities)
 {
-    glm::vec3 wish_dir(0.0f);
+    // 1. Flatten the camera vectors so looking up/down doesn't slow your movement
+    glm::vec3 forward = cam.Front;
+    forward.y = 0.0f;
+    forward = glm::normalize(forward);
 
-    if (Input::GetKey(GLFW_KEY_W))
-        wish_dir += cam.Front;
-    if (Input::GetKey(GLFW_KEY_S))
-        wish_dir -= cam.Front;
-    if (Input::GetKey(GLFW_KEY_D))
-        wish_dir += cam.Right;
-    if (Input::GetKey(GLFW_KEY_A))
-        wish_dir -= cam.Right;
+    glm::vec3 right = cam.Right;
+    right.y = 0.0f;
+    right = glm::normalize(right);
 
-    wish_dir.y = 0.0f;
+    // 2. Generate wish direction
+    glm::vec3 wish_dir = forward * Input::GetAxis("MoveForward") + right * Input::GetAxis("MoveRight");
+
     if (glm::length(wish_dir) > 0.0f)
         wish_dir = glm::normalize(wish_dir);
-        
-    if (Input::GetKeyDown(GLFW_KEY_LEFT_SHIFT) && dash_charges > 0 && glm::length(wish_dir) > 0.0f)
+
+    // --- Dash ---
+    if (Input::GetActionDown("Dash") && dash_charges > 0 && glm::length(wish_dir) > 0.0f)
     {
-        // Apply velocity
         velocity.x = wish_dir.x * DASH_SPEED;
         velocity.z = wish_dir.z * DASH_SPEED;
 
@@ -112,33 +112,43 @@ void Player::HandleInput(f32 delta_time, vector<Entity> &entities)
         dash_recharge_timer = 0.0f;
     }
 
-    if (Input::GetKeyDown(GLFW_KEY_SPACE) && is_grounded)
+    // 3. Auto-Bhop: Changed GetActionDown to GetAction.
+    if (Input::GetAction("Jump") && is_grounded)
     {
         velocity.y = 10.0f;
         is_grounded = false;
     }
 
+    // 4. Movement Physics Apply
     if (is_grounded)
     {
         ApplyFriction(delta_time);
-        Accelerate(wish_dir, 15.0f, 10.0f, delta_time);
+        Accelerate(wish_dir, 15.0f, 14.0f, delta_time);
     }
     else
     {
         Accelerate(wish_dir, 15.0f, 2.0f, delta_time);
     }
 
-
-    // --- pew pew
-
-    if(current_weapon)
+    // --- pew pew ---
+    if (current_weapon)
         current_weapon->UpdateCooldown(delta_time);
 
-    if(Input::GetMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
+    if (Input::GetActionDown("Fire"))
     {
-        if(current_weapon && current_weapon->Fire(cam.position, cam.GetFront(), entities))
+        std::cout << "[INPUT] 'Fire' action triggered!" << std::endl;
+
+        // 2. Checks if the AK47 successfully fired (cooldown is ready, has ammo, etc.)
+        if (current_weapon && current_weapon->Fire(cam.position, cam.GetFront(), entities))
         {
+            std::cout << "[WEAPON] BANG! AK47 fired. Applying recoil." << std::endl;
+
+            // This is your recoil!
             cam.ProcessMouseMov(0.0f, 5.0f);
+        }
+        else
+        {
+            std::cout << "[WEAPON] Click... weapon not ready (cooldown)." << std::endl;
         }
     }
 }
@@ -146,16 +156,18 @@ void Player::HandleInput(f32 delta_time, vector<Entity> &entities)
 void Player::ApplyFriction(f32 dt)
 {
     glm::vec3 flat_vel = velocity;
-    flat_vel.y = 0.8f;
+    flat_vel.y = 0.0f;
     f32 speed = glm::length(flat_vel);
 
     if (speed < 0.1f)
     {
-        velocity.x = 0, velocity.z = 0;
+        velocity.x = 0;
+        velocity.z = 0;
         return;
     }
 
-    f32 drop = speed * 6.0 * dt;
+    f32 friction = 8.0f;
+    f32 drop = speed * friction * dt;
     f32 new_spd = std::max(speed - drop, 0.0f);
     new_spd /= speed;
 

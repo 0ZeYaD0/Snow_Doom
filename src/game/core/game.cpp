@@ -14,6 +14,16 @@ Game::Game()
 
     Input::Init(window.GetWindow());
 
+    Input::BindAxis("MoveForward", KeyCode::W, KeyCode::S);
+    Input::BindAxis("MoveRight", KeyCode::D, KeyCode::A);
+
+    Input::BindAction("Jump", KeyCode::Space);
+    Input::BindAction("Dash", KeyCode::LeftShift);
+    Input::BindAction("Fire", MouseCode::Left);
+
+    Input::BindAction("ToggleUI", KeyCode::Tab);
+    Input::BindAction("Quit", KeyCode::Esc);
+
     // shaders
     main_shader = new Shader("res/shaders/vertex.glsl", "res/shaders/fragment.glsl");
 
@@ -54,6 +64,15 @@ Game::Game()
         glm::vec3(100.0f, 1.0f, 100.0f)));
 }
 
+void Game::ProcessInput()
+{
+    if (Input::GetAction("Quit"))
+        Exit();
+
+    if (Input::GetActionDown("ToggleUI"))
+        Input::ToggleCursor(window.GetWindow());
+}
+
 Game::~Game()
 {
     delete main_shader;
@@ -78,15 +97,6 @@ void Game::Run()
         Update();
         Render();
     }
-}
-
-void Game::ProcessInput()
-{
-    if (Input::GetKey(GLFW_KEY_ESCAPE))
-        Exit();
-
-    if (Input::GetKeyDown(GLFW_KEY_TAB))
-        Input::ToggleCursor(window.GetWindow());
 }
 
 void Game::Update()
