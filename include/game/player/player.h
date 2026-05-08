@@ -50,7 +50,7 @@ private:
     const f32 FALL_VELOCITY_THRESHOLD = 1.0f;
 
     // Weapons (TEMP)
-    const f32 BASE_RECOIL_PITCH = 5.0f;
+    const f32 BASE_RECOIL_PITCH = 2.0f;
 
     // RUNTIME STATE
     int dash_charges = MAX_DASH_CHARGES;
