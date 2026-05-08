@@ -7,9 +7,9 @@
 #include <engine/graphics/shader.h>
 #include <game/player/player.h>
 #include <engine/physics/aabb.h>
-
 #include <engine/ui/ui_manager.h>
 #include <game/ui/playerHUD.h>
+#include <engine/map/map_loader.h>
 
 #include <vector>
 using std::vector;
@@ -38,6 +38,7 @@ private:
     f32 last_frame;
 
     Shader *main_shader;
+    LoadMap current_map;
 
     vector<Mesh> loaded_meshes;
     vector<Mesh> floor_meshes;

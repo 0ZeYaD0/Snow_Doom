@@ -1,0 +1,90 @@
+# SNOW DOOM — THE OUTPOST
+# Format: block  x  y  z  sx  sy  sz
+
+# ==========================================
+# ROOM 1: SPAWN BUNKER (Player starts at 0, 4, 0)
+# ==========================================
+# Floor & Ceiling
+block    0      0     0      20    1     20
+block    0      6     0      20    1     20
+
+# Back, Left, and Right Walls
+block    0      3    -10     20    6     1
+block   -10     3     0      1     6     20
+block    10     3     0      1     6     20
+
+# Front Wall (With a doorway gap in the middle)
+block   -7      3     10     7     6     1
+block    7      3     10     7     6     1
+
+# Decorative Spawn Pillars
+block   -8      3    -8      2     6     2
+block    8      3    -8      2     6     2
+
+
+# ==========================================
+# CORRIDOR: Connecting the Bunker to the Arena
+# ==========================================
+# Floor & Ceiling
+block    0      0     15     6     1     10
+block    0      4     15     6     1     10
+
+# Left & Right Tunnel Walls
+block   -3.5    2     15     1     4     10
+block    3.5    2     15     1     4     10
+
+
+# ==========================================
+# ROOM 2: THE MAIN ARENA
+# ==========================================
+# Huge Arena Floor
+block    0      0     40     40    1     40
+
+# Arena Outer Walls
+block   -20     4     40     1     8     40
+block    20     4     40     1     8     40
+block    0      4     60     40    8     1
+
+# Arena Entry Wall (Connects to the corridor)
+block   -11.5   4     20     18    8     1
+block    11.5   4     20     18    8     1
+
+
+# ==========================================
+# ARENA FEATURES: Central Platform & Stairs
+# ==========================================
+# Massive Raised Platform in the middle
+block    0      1.5   40     12    3     12
+
+# "Jumping" Stairs leading up to the platform
+block    0      0.5   32     4     1     2
+block    0      1.0   33     4     1     2
+block    0      1.5   34     4     1     2
+
+# Corner Pillars in the Arena
+block   -15     4     30     3     8     3
+block    15     4     30     3     8     3
+block   -15     4     50     3     8     3
+block    15     4     50     3     8     3
+
+# Scattered Cover Blocks (To hide behind)
+block   -8      1     28     4     2     2
+block    8      1     28     4     2     2
+block   -10     1.5   40     2     3     4
+block    10     1.5   40     2     3     4
+
+
+# ==========================================
+# ROOM 3: THE SNIPER BALCONY
+# ==========================================
+# A raised floor at the very back of the arena
+block    0      3.5   57     20    1     6
+
+# Stairs up to the balcony (on the left side)
+block   -12     0.5   51     4     1     2
+block   -12     1.5   52     4     2     2
+block   -12     2.5   53     4     3     2
+block   -12     3.5   54     4     4     2
+
+# Balcony Railing (so the player can take cover)
+block    0      4.5   54.5   20    1     1

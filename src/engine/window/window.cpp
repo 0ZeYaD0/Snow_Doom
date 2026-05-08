@@ -38,7 +38,7 @@ void Window::InitializeWindow()
     Window::monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode *screen = glfwGetVideoMode(monitor);
     Window::monitor_width = screen->width;
-    Window::monitor_height = screen->width;
+    Window::monitor_height = screen->height;
 
     if (fullscreen)
     {

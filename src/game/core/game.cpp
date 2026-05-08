@@ -33,37 +33,23 @@ Game::Game()
     player_hud.Init();
 
     // player
-    player = new Player(glm::vec3(0.0f, 6.0f, 3.0f));
+    player = new Player(glm::vec3(0.0f, 4.0f, 0.0f));
 
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
     // --- obj test
-    loaded_meshes = objloader::LoadModel("res/models/cottage_obj.obj");
+    current_map = MapLoader::Load("res/maps/test.map");
 
-    for (size_t i = 0; i < loaded_meshes.size(); i++)
+    for (size_t i = 0; i < current_map.meshes.size(); i++)
     {
-        entities.push_back(Entity(&loaded_meshes[i]));
-
-        // scale down and move back
-        entities.back().transform.scale = glm::vec3(0.2f);
-        entities.back().transform.position = glm::vec3(0.0f, -1.0f, -5.0f);
+        entities.push_back(Entity(&current_map.meshes[i]));
     }
 
-    // --- ground loading
-    floor_meshes = objloader::LoadModel("res/models/floor.obj");
-    for (size_t i = 0; i < floor_meshes.size(); i++)
+    for (size_t i = 0; i < current_map.colliders.size(); i++)
     {
-        entities.push_back(Entity(&floor_meshes[i]));
-
-        entities.back().transform.scale = glm::vec3(50.0f, 1.0f, 50.0f);
-        entities.back().transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
+        level_colliders.push_back(current_map.colliders[i]);
     }
-
-    // phythix for floor
-    level_colliders.push_back(AABB::fromPosSize(
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(100.0f, 1.0f, 100.0f)));
 }
 
 void Game::ProcessInput()
