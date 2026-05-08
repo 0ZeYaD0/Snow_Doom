@@ -3,12 +3,12 @@
 /*
     TODO:
     - better ui
-        - dynamic crosshair
+        - dynamic crosshair (WIP)
         - better dash counter
         - gun info UI
         - screen effects
     - polish movement
-        - dash effects (anime lines, etc..)
+        - dash effects (WIP)
     - sound effects
     - player death
     - enemies
