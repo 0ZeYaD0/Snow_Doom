@@ -34,6 +34,25 @@ private:
     f32 target_crosshair_rotation = 0.0f;
     f32 crosshair_ring_scale = 1.0f;
     
-    i32 last_ammo_count = -1;
+    // New dynamic gap tracker
+    f32 current_crosshair_gap = 8.0f; 
+
+    int last_ammo_count = -1;
     bool was_reloading = false;
+
+    // --- Configuration Constants ---
+    const f32 CROSSHAIR_DOT_SIZE = 4.0f;
+    const f32 CROSSHAIR_LINE_LENGTH = 12.0f;
+    const f32 CROSSHAIR_LINE_THICKNESS = 2.0f;
+    const f32 CROSSHAIR_BASE_GAP = 8.0f;
+    const f32 CROSSHAIR_MAX_GAP = 24.0f; 
+    const f32 CROSSHAIR_RING_BASE_SIZE = 35.0f;
+    
+    // crosshair animation constants
+    const f32 CROSSHAIR_EXPAND_SPEED = 15.0f; 
+    const f32 CROSSHAIR_SMOOTHING = 15.0f;
+    const f32 CROSSHAIR_RING_SHOOT_SCALE = 2.2f;
+    const f32 CROSSHAIR_RELOAD_ROTATION = 90.0f;
+    const f32 CROSSHAIR_SCALE_SMOOTHING = 15.0f;
+    const f32 CROSSHAIR_ROT_SMOOTHING = 8.0f;
 };
