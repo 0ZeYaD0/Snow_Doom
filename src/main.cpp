@@ -7,12 +7,14 @@
         - better dash counter
         - gun info UI
         - screen effects
-    - polish movement
-        - dash effects (WIP)
     - sound effects
-    - player death
+    - game loop
+    - map stuff
+        - better map file & loading
+        - enemy placement in map file
     - enemies
-    - map
+        - enemy types & actions
+        - truck-kun boss fight
 */
 
 i32 main()
