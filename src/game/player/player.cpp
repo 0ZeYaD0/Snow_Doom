@@ -107,11 +107,11 @@ void Player::HandleInput(f32 delta_time, vector<Entity *> &entities)
     if (is_grounded)
     {
         ApplyFriction(delta_time);
-        Accelerate(wish_dir, 15.0f, 14.0f, delta_time);
+        Accelerate(wish_dir, MAX_GROUND_SPEED, GROUND_ACCEL, delta_time);
     }
     else
     {
-        Accelerate(wish_dir, 15.0f, 2.0f, delta_time);
+        Accelerate(wish_dir, MAX_AIR_SPEED, AIR_ACCEL, delta_time);
     }
 
     // --- pew pew ---
@@ -173,15 +173,14 @@ void Player::ApplyFriction(f32 dt)
     flat_vel.y = 0.0f;
     f32 speed = glm::length(flat_vel);
 
-    if (speed < 0.1f)
+    if (speed < STOP_SPEED_THRESHOLD)
     {
         velocity.x = 0;
         velocity.z = 0;
         return;
     }
 
-    f32 friction = 8.0f;
-    f32 drop = speed * friction * dt;
+    f32 drop = speed * GROUND_FRICTION * dt;
     f32 new_spd = std::max(speed - drop, 0.0f);
     new_spd /= speed;
 
