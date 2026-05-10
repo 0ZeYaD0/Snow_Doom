@@ -10,12 +10,15 @@ uniform mat4 projection;
 
 out vec3 vertexColor;
 out vec3 normal;
+out vec2 TexCoords; // Added this to send UVs to the fragment shader
 
 void main()
 {
     gl_Position = projection * view * model * vec4(aPos, 1.0);
+    
     vertexColor = aColor;
+    TexCoords = aTexUV; // Pass the UV coordinates right through
     
     // This math ensures the normals point the right way even if you rotate or scale the model
-    normal = mat3(transpose(inverse(model))) * aNormal; 
+    normal = mat3(transpose(inverse(model))) * aNormal;
 }

@@ -41,11 +41,6 @@ Game::Game()
     // --- obj test
     current_map = MapLoader::Load("res/maps/test.map");
 
-    for (size_t i = 0; i < current_map.meshes.size(); i++)
-    {
-        entities.push_back(Entity(&current_map.meshes[i]));
-    }
-
     for (size_t i = 0; i < current_map.colliders.size(); i++)
     {
         level_colliders.push_back(current_map.colliders[i]);
@@ -108,8 +103,19 @@ void Game::Render()
 
     main_shader->SetMat4("view", view);
     main_shader->SetMat4("projection", proj);
+    main_shader->SetInt("u_Texture", 0);
 
-    main_shader->SetVec4("col", 1.0f, 0.5f, 0.2f, 1.0f);
+    main_shader->SetMat4("model", glm::mat4(1.0f));
+
+    for (const auto &map_ent : current_map.entities)
+    {
+        if (map_ent.texture)
+        {
+            map_ent.texture->Bind(0);
+        }
+
+        map_ent.mesh.Draw(*main_shader);
+    }
 
     for (const auto &entity : entities)
     {

@@ -19,11 +19,11 @@ struct Vertex
 class Mesh
 {
 public:
-
     vector<Vertex> vertices;
-    vector<u32>    indices;
+    vector<u32> indices;
+    Mesh() : vao(nullptr), vbo(nullptr), ebo(nullptr) {}
 
-    Mesh(const vector<Vertex> &vertices, const vector<u32> &indices);
+    Mesh(const std::vector<Vertex> &vertices, const std::vector<u32> &indices);
     void Draw(const Shader &shader) const;
 
 private:
