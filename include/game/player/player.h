@@ -2,8 +2,8 @@
 
 #include <engine/core/defines.h>
 
-#include <game/entities/entity.h>
-#include <game/entities/hurtable.h>
+#include <game/core/entity.h>
+#include <game/core/hurtable.h>
 #include <game/player/camera.h>
 #include <engine/physics/physics.h>
 #include <engine/core/input.h>
@@ -42,9 +42,9 @@ private:
     const f32 CAM_TILT_SPEED = 10.0f;
     
     const f32 BOB_MIN_SPEED = 0.1f;
-    const f32 BOB_MOVE_AMP = 0.15f;
+    const f32 BOB_MOVE_AMP = 0.05f;
     const f32 BOB_MOVE_FREQ = 12.0f;
-    const f32 BOB_IDLE_AMP = 0.02f;
+    const f32 BOB_IDLE_AMP = 0.005f;
     const f32 BOB_IDLE_FREQ = 2.0f;
     const f32 BOB_SMOOTHING = 10.0f;
     const f32 FALL_VELOCITY_THRESHOLD = 1.0f;
@@ -76,13 +76,13 @@ public:
     Player(glm::vec3 spawn_pos);
     ~Player();
 
-    void UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<Entity> &entities);
+    void UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<Entity *> &entities);
 
 private:
     // --- ARCH ---
     void UpdateTimers(f32 delta_time);
     void UpdateMouseLook();
-    void HandleInput(f32 delta_time, vector<Entity> &entities);
+    void HandleInput(f32 delta_time, vector<Entity *> &entities);
     void UpdatePhysics(f32 delta_time, const vector<AABB> &obstacles);
     void UpdateCameraEffects(f32 delta_time);
 

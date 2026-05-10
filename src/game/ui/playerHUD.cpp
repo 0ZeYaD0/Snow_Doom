@@ -135,6 +135,12 @@ void PlayerHUD::DrawCrosshair(UIManager& ui, const Window& window, const Player*
     glm::vec4 color(1.0f, 1.0f, 1.0f, 1.0f); 
     glm::vec4 bg_color(0.0f, 0.0f, 0.0f, 0.0f); 
 
+    if (player->current_weapon->WasHitRecently())
+    {
+        // Paint it all violently red
+        color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f); 
+    }
+
     // Center dot
     ui.DrawRect(center - glm::vec2(CROSSHAIR_DOT_SIZE / 2.0f), glm::vec2(CROSSHAIR_DOT_SIZE), color, bg_color, 1.0f);
 

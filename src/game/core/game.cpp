@@ -4,6 +4,9 @@
 #include <engine/core/input.h>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <game/enemies/enemy.h>
+#include <engine/map/mesh_generation.h>
+
 Game::Game()
     : delta_time(0.0f), last_frame(0.0f)
 {
@@ -45,6 +48,12 @@ Game::Game()
     {
         level_colliders.push_back(current_map.colliders[i]);
     }
+
+    // ENEMY TEST
+    Mesh *sprite_quad = new Mesh(BuildSpriteQuad());
+    Texture *enemy_tex = new Texture("res\\art\\santa.png");
+
+    entities.push_back(new Enemy(glm::vec3(0.0f, 0.0f, -5.0f), player, sprite_quad, enemy_tex));
 }
 
 void Game::ProcessInput()
@@ -88,7 +97,7 @@ void Game::Update()
 
     for (auto &entity : entities)
     {
-        entity.Update(delta_time);
+        entity->Update(delta_time);
     }
 }
 
@@ -107,6 +116,8 @@ void Game::Render()
 
     main_shader->SetMat4("model", glm::mat4(1.0f));
 
+    main_shader->SetVec4("col", 1.0f, 0.5f, 0.2f, 1.0f);
+    main_shader->SetInt("useTexture", 0);
     for (const auto &map_ent : current_map.entities)
     {
         if (map_ent.texture)
@@ -119,7 +130,7 @@ void Game::Render()
 
     for (const auto &entity : entities)
     {
-        entity.Draw(*main_shader);
+        entity->Draw(*main_shader);
     }
 
     ui_manager.Begin(window);

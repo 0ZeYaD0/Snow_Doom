@@ -10,7 +10,7 @@ uniform mat4 projection;
 
 out vec3 vertexColor;
 out vec3 normal;
-out vec2 TexCoords; // Added this to send UVs to the fragment shader
+out vec2 TexCoord;
 
 void main()
 {
@@ -19,6 +19,9 @@ void main()
     vertexColor = aColor;
     TexCoords = aTexUV; // Pass the UV coordinates right through
     
+    TexCoord = aTexUV;
+    
+    normal = mat3(transpose(inverse(model))) * aNormal; 
     // This math ensures the normals point the right way even if you rotate or scale the model
     normal = mat3(transpose(inverse(model))) * aNormal;
 }
