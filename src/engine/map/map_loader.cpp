@@ -25,14 +25,15 @@ namespace MapLoader
         {
             int idx[4];
             glm::vec3 normal;
+            glm::vec2 scale;
         };
         FaceDef faces[6] = {
-            {{4, 5, 6, 7}, {0, 0, 1}},
-            {{1, 0, 3, 2}, {0, 0, -1}},
-            {{0, 4, 7, 3}, {-1, 0, 0}},
-            {{5, 1, 2, 6}, {1, 0, 0}},
-            {{3, 7, 6, 2}, {0, 1, 0}},
-            {{0, 1, 5, 4}, {0, -1, 0}},
+            {{4, 5, 6, 7}, {0, 0, 1}, {size.x, size.y}},  // Front
+            {{1, 0, 3, 2}, {0, 0, -1}, {size.x, size.y}}, // Back
+            {{0, 4, 7, 3}, {-1, 0, 0}, {size.z, size.y}}, // Left
+            {{5, 1, 2, 6}, {1, 0, 0}, {size.z, size.y}},  // Right
+            {{3, 7, 6, 2}, {0, 1, 0}, {size.x, size.z}},  // Top
+            {{0, 1, 5, 4}, {0, -1, 0}, {size.x, size.z}}, // Bottom
         };
 
         vector<Vertex> verts;
@@ -40,12 +41,18 @@ namespace MapLoader
         verts.reserve(24);
         indices.reserve(36);
 
-        glm::vec2 uvs[4] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
-        glm::vec3 color(0.8f);
+        glm::vec3 color(1.0f);
 
         for (auto &f : faces)
         {
             u32 base = static_cast<u32>(verts.size());
+
+            float tileFactor = 0.5f;
+            glm::vec2 uvs[4] = {
+                {0, 0},
+                {f.scale.x * tileFactor, 0},
+                {f.scale.x * tileFactor, f.scale.y * tileFactor},
+                {0, f.scale.y * tileFactor}};
 
             for (int i = 0; i < 4; i++)
             {
@@ -81,7 +88,12 @@ namespace MapLoader
 
         result.blocks.reserve(64);
         result.colliders.reserve(64);
-        result.meshes.reserve(64);
+        result.entities.reserve(64);
+
+        std::unordered_map<string, std::shared_ptr<Texture>> textureCache;
+
+        const string textureBasePath = "res/texture/";
+        const string defaultTextureName = "Brick01.png";
 
         string line;
         while (std::getline(file, line))
@@ -102,12 +114,42 @@ namespace MapLoader
                     continue;
                 }
 
+                string textureName = defaultTextureName;
+                if (ss >> token)
+                {
+                    textureName = token;
+                }
+
+                if (textureCache.find(textureName) == textureCache.end())
+                {
+                    string folderName = "";
+                    for (char c : textureName)
+                    {
+                        if (std::isalpha(c))
+                        {
+                            folderName += c;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    string fullPath = textureBasePath + folderName + "/" + textureName;
+
+                    textureCache[textureName] = std::make_shared<Texture>(fullPath);
+                }
+
                 glm::vec3 pos(x, y, z);
                 glm::vec3 size(sx, sy, sz);
 
                 result.blocks.push_back({pos, size});
                 result.colliders.push_back(AABB::fromPosSize(pos, size));
-                result.meshes.push_back(BuildCubeMesh(pos, size));
+
+                MapEntity entity;
+                entity.mesh = BuildCubeMesh(pos, size);
+                entity.texture = textureCache[textureName];
+                result.entities.push_back(entity);
             }
         }
 

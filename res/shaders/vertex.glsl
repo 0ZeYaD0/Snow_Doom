@@ -15,9 +15,13 @@ out vec2 TexCoord;
 void main()
 {
     gl_Position = projection * view * model * vec4(aPos, 1.0);
+    
     vertexColor = aColor;
+    TexCoords = aTexUV; // Pass the UV coordinates right through
     
     TexCoord = aTexUV;
     
     normal = mat3(transpose(inverse(model))) * aNormal; 
+    // This math ensures the normals point the right way even if you rotate or scale the model
+    normal = mat3(transpose(inverse(model))) * aNormal;
 }
