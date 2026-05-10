@@ -3,21 +3,28 @@ out vec4 FragColor;
 
 in vec3 vertexColor;
 in vec3 normal;
+in vec2 TexCoord;
+
+uniform sampler2D spriteTexture;
+uniform int useTexture;
 
 void main()
 {
-    // Fake sunlight coming from the top-right
+    vec4 texColor = vec4(1.0, 1.0, 1.0, 1.0); 
+
+    if (useTexture == 1) 
+    {
+        texColor = texture(spriteTexture, TexCoord);
+        if (texColor.a < 0.1) 
+            discard;
+    }
+
     vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0)); 
     vec3 norm = normalize(normal);
-
-    // Calculate how directly the light hits the surface (0.0 to 1.0)
     float diff = max(dot(norm, lightDir), 0.0);
-
-    // Add a little ambient light so the shadows aren't pitch black
     float ambient = 0.3;
 
-    // Multiply the grey material color by our light calculations
-    vec3 finalColor = vertexColor * (diff + ambient);
+    vec3 finalColor = texColor.rgb * vertexColor * (diff + ambient);
 
-    FragColor = vec4(finalColor, 1.0);
+    FragColor = vec4(finalColor, texColor.a);
 }

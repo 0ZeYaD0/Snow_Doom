@@ -10,12 +10,14 @@ uniform mat4 projection;
 
 out vec3 vertexColor;
 out vec3 normal;
+out vec2 TexCoord;
 
 void main()
 {
     gl_Position = projection * view * model * vec4(aPos, 1.0);
     vertexColor = aColor;
     
-    // This math ensures the normals point the right way even if you rotate or scale the model
+    TexCoord = aTexUV;
+    
     normal = mat3(transpose(inverse(model))) * aNormal; 
 }

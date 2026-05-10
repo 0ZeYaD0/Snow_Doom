@@ -22,7 +22,7 @@ Player::~Player()
         delete current_weapon;
 }
 
-void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<Entity> &entities)
+void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<Entity *> &entities)
 {
     UpdateTimers(delta_time);
 
@@ -63,7 +63,7 @@ void Player::UpdateMouseLook()
     cam.ProcessMouseMov(mouse_delta.x, mouse_delta.y);
 }
 
-void Player::HandleInput(f32 delta_time, vector<Entity> &entities)
+void Player::HandleInput(f32 delta_time, vector<Entity *> &entities)
 {
     // 1. Flatten the camera vectors so looking up/down doesn't slow your movement
     glm::vec3 forward = cam.Front;

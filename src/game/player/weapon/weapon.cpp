@@ -20,6 +20,11 @@ Weapon::~Weapon()
 
 void Weapon::Update(f32 delta_time)
 {
+    if(hitmarker_timer > 0.0f)
+    {
+        hitmarker_timer -= delta_time;
+    }
+
     if (is_reloading)
     {
         reload_timer -= delta_time;
@@ -58,7 +63,7 @@ void Weapon::Update(f32 delta_time)
     }
 }
 
-bool Weapon::Fire(glm::vec3 origin, glm::vec3 direction, std::vector<Entity>& entities)
+bool Weapon::Fire(glm::vec3 origin, glm::vec3 direction, std::vector<Entity *>& entities)
 {
     if (current_cooldown > 0.0f || is_reloading || curr_ammo <= 0)
         return false;
@@ -70,17 +75,14 @@ bool Weapon::Fire(glm::vec3 origin, glm::vec3 direction, std::vector<Entity>& en
     anim_index = 0;
     anim_timer = 0.0f;
 
-    std::vector<Entity*> entity_ptrs;
-    for(auto &e : entities)
-        entity_ptrs.push_back(&e);
-
-    RaycastHit hit = Physics::Raycast(origin, direction, entity_ptrs, max_range);
+    RaycastHit hit = Physics::Raycast(origin, direction, entities, max_range);
 
     if(hit.hit && hit.hit_entity && hit.hit_entity->health)
     {
         if(hit.hit_entity->tag == CollisionTag::ENEMY)
         {
             hit.hit_entity->health->TakeDmg(base_dmg);
+            hitmarker_timer = 0.15f;
         }
     }
 

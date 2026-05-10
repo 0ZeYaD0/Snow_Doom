@@ -1,4 +1,4 @@
-#include <game/entities/hurtable.h>
+#include <game/core/hurtable.h>
 
 void Hurtable::TakeDmg(f32 amt)
 {

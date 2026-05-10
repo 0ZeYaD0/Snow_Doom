@@ -1,7 +1,8 @@
 #pragma once
 
 #include <engine/physics/aabb.h>
-#include <game/entities/entity.h>
+#include <game/core/entity.h>
+#include <game/core/hurtable.h>
 
 #include <glm/glm.hpp>
 

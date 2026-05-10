@@ -7,7 +7,7 @@
 
 #include <engine/graphics/mesh.h>
 #include <engine/graphics/shader.h>
-#include <game/entities/hurtable.h>
+#include <game/core/hurtable.h>
 
 enum class CollisionTag
 {

@@ -31,6 +31,7 @@ protected:
     bool is_reloading;
     f32 reload_time;
     f32 reload_timer;
+    f32 hitmarker_timer = 0.0f;
     
     f32 current_cooldown;
 
@@ -54,7 +55,7 @@ public:
     virtual void Update(f32 delta_time);
 
     // return true if fired
-    virtual bool Fire(glm::vec3 origin, glm::vec3 direction, std::vector<Entity>& entities);
+    virtual bool Fire(glm::vec3 origin, glm::vec3 direction, std::vector<Entity *>& entities);
 
     virtual void Reload();
     int GetCurrentAmmo() const { return curr_ammo; }
@@ -67,4 +68,6 @@ public:
     i32 GetTotalFrames() const { return total_frames; };
 
     bool IsReloading() const { return is_reloading; }
+
+    bool WasHitRecently() const { return hitmarker_timer > 0.0f; }
 };

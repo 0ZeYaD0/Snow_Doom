@@ -20,8 +20,8 @@ public:
     void SetMat4(const string &name, const glm::mat4 &mat) const;
     void SetFloat(const string &name, f32 value) const;
     void SetVec4(const string &name, f32 x, f32 y, f32 z, f32 w) const;
-    void SetVec2(const string &name, f32 x, f32 y);
-    void SetInt(const string &name, i32 value);
+    void SetVec2(const string &name, f32 x, f32 y) const;
+    void SetInt(const string &name, i32 value) const;
 
 private:
     string LoadShaderSource(const string &path);

@@ -42,7 +42,7 @@ private:
 
     vector<Mesh> loaded_meshes;
     vector<Mesh> floor_meshes;
-    vector<Entity> entities;
+    vector<Entity *> entities;
 
     UIManager ui_manager;
     PlayerHUD player_hud;

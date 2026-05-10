@@ -54,12 +54,12 @@ void Shader::SetVec4(const string &name, f32 x, f32 y, f32 z, f32 w) const
     glUniform4f(glGetUniformLocation(ID, name.c_str()), x, y, z, w);
 }
 
-void Shader::SetVec2(const string &name, f32 x, f32 y)
+void Shader::SetVec2(const string &name, f32 x, f32 y) const
 {
     glUniform2f(glGetUniformLocation(ID, name.c_str()), x, y);
 }
 
-void Shader::SetInt(const string &name, i32 value)
+void Shader::SetInt(const string &name, i32 value) const
 {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 }
