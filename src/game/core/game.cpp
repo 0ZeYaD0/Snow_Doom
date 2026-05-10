@@ -53,7 +53,7 @@ Game::Game()
     Mesh *sprite_quad = new Mesh(BuildSpriteQuad());
     Texture *enemy_tex = new Texture("res\\art\\santa.png");
 
-    entities.push_back(new Enemy(glm::vec3(0.0f, 0.0f, -5.0f), player, sprite_quad, enemy_tex));
+    entities.push_back(new Enemy(glm::vec3(0.0f, 0.8f, -5.0f), player, sprite_quad, enemy_tex));
 }
 
 void Game::ProcessInput()
@@ -112,21 +112,22 @@ void Game::Render()
 
     main_shader->SetMat4("view", view);
     main_shader->SetMat4("projection", proj);
-    main_shader->SetInt("u_Texture", 0);
-
     main_shader->SetMat4("model", glm::mat4(1.0f));
 
     main_shader->SetVec4("col", 1.0f, 0.5f, 0.2f, 1.0f);
-    main_shader->SetInt("useTexture", 0);
+
+    main_shader->SetInt("u_Texture", 0);
+    main_shader->SetInt("useTexture", 1);
+    
     for (const auto &map_ent : current_map.entities)
     {
         if (map_ent.texture)
-        {
             map_ent.texture->Bind(0);
-        }
 
         map_ent.mesh.Draw(*main_shader);
     }
+
+    main_shader->SetInt("useTexture", 0);
 
     for (const auto &entity : entities)
     {

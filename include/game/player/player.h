@@ -22,16 +22,16 @@ private:
     const f32 GRAVITY_MULT = 25.0f;
     
     // Movement Physics
-    const f32 MAX_GROUND_SPEED = 15.0f;
-    const f32 GROUND_ACCEL = 14.0f;
-    const f32 MAX_AIR_SPEED = 15.0f;
+    const f32 MAX_GROUND_SPEED = 12.0f;
+    const f32 GROUND_ACCEL = 10.0f;
+    const f32 MAX_AIR_SPEED = 13.0f;
     const f32 AIR_ACCEL = 2.0f;
-    const f32 GROUND_FRICTION = 8.0f;
+    const f32 GROUND_FRICTION = 9.0f;
     const f32 STOP_SPEED_THRESHOLD = 0.1f;
     const f32 JUMP_FORCE = 10.0f;
 
     // Dash
-    const f32 DASH_SPEED = 45.0f;
+    const f32 DASH_SPEED = 30.0f;
     const f32 DASH_JUMP_FORCE = 2.0f;
     const int MAX_DASH_CHARGES = 3;
     const f32 DASH_RECHARGE_TIME = 2.0f;

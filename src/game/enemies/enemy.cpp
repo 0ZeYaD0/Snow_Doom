@@ -7,7 +7,7 @@ Enemy::Enemy(glm::vec3 spawn_pos, Player *player, Mesh *mesh, Texture *tex)
 {
     transform.position = spawn_pos;
 
-    // transform.scale = glm::vec3(1.5f, 2.5f, 1.0f);
+    transform.scale = glm::vec3(1.5f, 1.0f, 1.0f);
 
     this->tag = CollisionTag::ENEMY;
 

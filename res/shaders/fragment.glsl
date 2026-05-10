@@ -1,29 +1,28 @@
 #version 330 core
 out vec4 FragColor;
 
-in vec2 TexCoords; // Make sure your vertex shader passes this out!
 in vec3 vertexColor;
 in vec3 normal;
 in vec2 TexCoord;
 
-uniform sampler2D spriteTexture;
+// The unified texture sampler bound in C++
+uniform sampler2D u_Texture; 
 uniform int useTexture;
-
-// The texture sampler we will bind in C++
-uniform sampler2D u_Texture;
 
 void main()
 {
+    // Default to pure white so multiplying by it changes nothing for untextured map blocks
     vec4 texColor = vec4(1.0, 1.0, 1.0, 1.0); 
 
     if (useTexture == 1) 
     {
-        texColor = texture(spriteTexture, TexCoord);
+        texColor = texture(u_Texture, TexCoord);
+        
+        // Retro transparent discard for sprites
         if (texColor.a < 0.1) 
             discard;
     }
 
-    vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0)); 
     // Fake sunlight coming from the top-right
     vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
     vec3 norm = normalize(normal);
@@ -32,11 +31,8 @@ void main()
     // Add a little ambient light so the shadows aren't pitch black
     float ambient = 0.3;
     
-    // Sample the color from the texture at the current UV coordinate
-    vec4 texColor = texture(u_Texture, TexCoords);
-
-    // Multiply the texture color by the lighting calculations
-    vec3 finalColor = texColor.rgb * (diff + ambient);
+    // Combine texture (or white), vertex color, and lighting
+    vec3 finalColor = texColor.rgb * vertexColor * (diff + ambient);
     
     FragColor = vec4(finalColor, texColor.a);
 }
