@@ -22,5 +22,5 @@ project: snow_doom {
     inc: [ "include", "vendor" ]
     libdirs: [ "lib" ]
 
-    links: [ opengl32, gdi32, glfw3dll, glad ]
+    links: [ opengl32, gdi32, glfw3dll, glad, OpenAL32dll ]
 }
