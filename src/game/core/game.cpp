@@ -43,6 +43,8 @@ Game::Game()
 
     // player
     player = new Player(glm::vec3(0.0f, 4.0f, 0.0f));
+    AudioBuffer *snd_player_shoot = new AudioBuffer("res/audio/shoot.ogg");
+    player->sfx_shoot = snd_player_shoot;
 
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -55,16 +57,19 @@ Game::Game()
         level_colliders.push_back(current_map.colliders[i]);
     }
 
-    // ENEMY TEST
     Mesh *sprite_quad = new Mesh(BuildSpriteQuad());
     Texture *enemy_tex = new Texture("res\\art\\santa.png");
 
-    entities.push_back(new Enemy(glm::vec3(0.0f, 0.8f, -5.0f), player, sprite_quad, enemy_tex));
+    AudioBuffer *snd_death = new AudioBuffer("res/audio/death/4.ogg");
 
-    // AUDIO TEST
-    AudioBuffer *test_sound = new AudioBuffer("res/audio/loading.ogg");
-    AudioSource *test_source = new AudioSource();
-    test_source->Play(test_sound);
+    // 2. Create the enemy object
+    Enemy *test_enemy = new Enemy(glm::vec3(0.0f, 0.8f, -5.0f), player, sprite_quad, enemy_tex);
+
+    // 3. Plug the sounds into the enemy's component
+    test_enemy->sfx_death = snd_death;
+
+    // 4. Add the fully configured enemy to the world
+    entities.push_back(test_enemy);
 }
 
 void Game::ProcessInput()

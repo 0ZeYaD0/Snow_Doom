@@ -24,6 +24,8 @@ Player::~Player()
 
 void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<Entity *> &entities)
 {
+    for (int i = 0; i < AUDIO_POOL_SIZE; i++)
+        audio_pool[i].SetPosition(transform.position);
     UpdateTimers(delta_time);
 
     UpdateMouseLook();
@@ -51,7 +53,7 @@ void Player::UpdateTimers(f32 delta_time)
         dash_recharge_timer = 0.0f;
     }
 
-    if(current_weapon)
+    if (current_weapon)
     {
         current_weapon->Update(delta_time);
     }
@@ -120,7 +122,10 @@ void Player::HandleInput(f32 delta_time, vector<Entity *> &entities)
         if (Input::GetAction("Fire"))
         {
             if (current_weapon->Fire(cam.position, cam.Front, entities))
+            {
                 cam.ProcessMouseMov(0.0f, current_weapon->GetRecoil());
+                PlayShootSound();
+            }
         }
 
         if (Input::GetActionDown("Reload"))
@@ -257,12 +262,27 @@ void Player::UpdateSpeedLines(f32 delta_time)
     f32 current_speed = glm::length(flat_vel);
 
     f32 target_opacity = 0.0f;
-    
-    if (current_speed > MAX_GROUND_SPEED + 2.0f) 
+
+    if (current_speed > MAX_GROUND_SPEED + 2.0f)
     {
         target_opacity = (current_speed - MAX_GROUND_SPEED) / (DASH_SPEED - MAX_GROUND_SPEED);
         target_opacity = glm::clamp(target_opacity, 0.0f, 1.0f);
     }
 
     speed_lines_opacity = glm::mix(speed_lines_opacity, target_opacity, 8.0f * delta_time);
+}
+
+void Player::PlaySoundOverlapped(AudioBuffer *buffer)
+{
+    if (!buffer)
+        return;
+
+    audio_pool[current_audio_index].Play(buffer);
+
+    current_audio_index = (current_audio_index + 1) % AUDIO_POOL_SIZE;
+}
+
+void Player::PlayShootSound()
+{
+    PlaySoundOverlapped(sfx_shoot);
 }

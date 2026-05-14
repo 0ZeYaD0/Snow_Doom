@@ -9,6 +9,9 @@
 #include <engine/core/input.h>
 #include <game/player/weapon/weapon.h>
 
+#include <engine/audio/audio_buffer.h>
+#include <engine/audio/audio_source.h>
+
 #include <vector>
 #include <iostream>
 using std::vector;
@@ -16,11 +19,10 @@ using std::vector;
 class Player : public Entity
 {
 private:
-
     // CONFIG
     const f32 MAX_HEALTH = 100.0f;
     const f32 GRAVITY_MULT = 25.0f;
-    
+
     // Movement Physics
     const f32 MAX_GROUND_SPEED = 12.0f;
     const f32 GROUND_ACCEL = 10.0f;
@@ -40,7 +42,7 @@ private:
     const f32 CAM_Y_POS = 0.8f;
     const f32 CAM_MAX_TILT = 1.0f;
     const f32 CAM_TILT_SPEED = 10.0f;
-    
+
     const f32 BOB_MIN_SPEED = 0.1f;
     const f32 BOB_MOVE_AMP = 0.05f;
     const f32 BOB_MOVE_FREQ = 12.0f;
@@ -55,7 +57,7 @@ private:
     // RUNTIME STATE
     int dash_charges = MAX_DASH_CHARGES;
     f32 dash_recharge_timer = 0.0f;
-    
+
     f32 bob_phase = 0.0f;
     f32 current_bob_amp = 0.0f;
     bool head_bob = true;
@@ -71,6 +73,10 @@ public:
     Hurtable health;
     Camera cam;
     Weapon *current_weapon = nullptr;
+
+    // --- AUDIO ---
+    AudioBuffer *sfx_shoot = nullptr;
+    void PlayShootSound();
 
     // METHODS
     Player(glm::vec3 spawn_pos);
@@ -94,6 +100,13 @@ private:
     void UpdateCameraTilt(f32 delta_time);
     void HeadBob(f32 delta_time);
     void UpdateSpeedLines(f32 delta_time);
+
+    // --- AUDIO POOL ---
+    static const int AUDIO_POOL_SIZE = 4;
+    AudioSource audio_pool[AUDIO_POOL_SIZE];
+    int current_audio_index = 0;
+
+    void PlaySoundOverlapped(AudioBuffer *buffer);
 
 public:
     // getters/setters
