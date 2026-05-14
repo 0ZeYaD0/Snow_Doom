@@ -9,9 +9,13 @@
         - screen effects
     - sound effects
     - game loop
-    - map stuff
-        - better map file & loading
-        - enemy placement in map file
+        - scene management
+        - main menu
+        - scene workflow (for cutscenes/scene progress/boss figths etc..)
+    - interaction system
+        - doors open on close proximity to player (automatically)
+        - keys for doors
+        - picking up weapon
     - enemies
         - enemy types & actions
         - truck-kun boss fight
