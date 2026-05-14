@@ -50,7 +50,7 @@ Game::Game()
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
     // --- obj test
-    current_map = MapLoader::Load("res/maps/test.map");
+    current_map = MapLoader::Load("res/maps/level_2.map");
 
     for (size_t i = 0; i < current_map.colliders.size(); i++)
     {

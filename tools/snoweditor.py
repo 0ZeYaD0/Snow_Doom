@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import math
 import os
+import copy
 
 ZOOM_DEFAULT = 10
 CANVAS_WIDTH  = 800
@@ -22,15 +23,23 @@ class SnowEditor(tk.Tk):
         self.zoom  = ZOOM_DEFAULT
 
         # drag state — mode: None | "move" | "resize"
-        self.drag = {"mode": None, "anchor_wx": 0, "anchor_wz": 0}
+        self.drag = {"mode": None, "anchor_wx": 0, "anchor_wz": 0, "offset_x": 0, "offset_z": 0}
 
         self.res_dir            = self._find_res_dir()
         self.available_textures = []
         self.available_models   = []
         self.scan_assets()
 
+        # Mini 3D Preview State
+        self.preview_rot_y = 0.0
+        self.preview_rot_x = 0.5  # Pitch down slightly so we aren't at ground level
+
         self.setup_ui()
         self.draw_canvas()
+
+        # Binds
+        self.bind("<Control-d>", self.duplicate_object)
+        self.bind("<Control-D>", self.duplicate_object)
 
     # ------------------------------------------------------------------ #
     #  ASSET DISCOVERY                                                     #
@@ -119,6 +128,12 @@ class SnowEditor(tk.Tk):
         self.canvas.bind("<MouseWheel>",      self._wheel)
         self.canvas.bind("<Button-4>",        self._wheel)
         self.canvas.bind("<Button-5>",        self._wheel)
+
+        # Mini 3D Preview Canvas
+        self.preview_canvas = tk.Canvas(self.canvas, width=200, height=200, bg="#1e1e1e", highlightthickness=1, highlightbackground="#444")
+        self.preview_canvas.place(x=10, y=30)
+        self.preview_canvas.bind("<B1-Motion>", self._rotate_preview)
+        self.preview_canvas.bind("<ButtonRelease-1>", self._on_preview_release)
 
         self.status_var = tk.StringVar(value="Ready")
         tk.Label(left, textvariable=self.status_var, anchor="w",
@@ -282,9 +297,10 @@ class SnowEditor(tk.Tk):
             self._draw_entity(ent, orig_i, orig_i == self.selected_index)
 
         self.canvas.create_text(8, 8, anchor="nw",
-                                text=f"zoom x{self.zoom}  |  RMB=pan  scroll=zoom",
+                                text=f"zoom x{self.zoom}  |  RMB=pan  scroll=zoom  |  Ctrl+D=Duplicate",
                                 fill="#444", font=("Courier", 8))
         self._refresh_listbox()
+        self.draw_preview()
 
     def _draw_entity(self, ent, idx, selected):
         outline = "#ffffff" if selected else "#000000"
@@ -353,6 +369,73 @@ class SnowEditor(tk.Tk):
         return "#404040"
 
     # ------------------------------------------------------------------ #
+    #  3D MINI PREVIEW                                                     #
+    # ------------------------------------------------------------------ #
+
+    def _rotate_preview(self, event):
+        if not hasattr(self, "last_prev_x"):
+            self.last_prev_x = event.x
+            self.last_prev_y = event.y
+            return
+            
+        dx = event.x - self.last_prev_x
+        dy = event.y - self.last_prev_y
+        
+        self.preview_rot_y -= dx * 0.02
+        self.preview_rot_x -= dy * 0.02
+        
+        self.last_prev_x = event.x
+        self.last_prev_y = event.y
+        self.draw_preview()
+
+    def _on_preview_release(self, event):
+        if hasattr(self, "last_prev_x"):
+            del self.last_prev_x
+
+    def draw_preview(self):
+        self.preview_canvas.delete("all")
+        cx, cy = 100, 100 
+        scale = max(2.0, self.zoom * 0.5) 
+        
+        cos_y, sin_y = math.cos(self.preview_rot_y), math.sin(self.preview_rot_y)
+        cos_x, sin_x = math.cos(self.preview_rot_x), math.sin(self.preview_rot_x)
+        
+        def project(px, py, pz):
+            px -= self.cam_x
+            pz -= self.cam_z
+            
+            # Rotate Y (Yaw)
+            rx = px * cos_y - pz * sin_y
+            rz = px * sin_y + pz * cos_y
+            
+            # Rotate X (Pitch)
+            ry = py * cos_x - rz * sin_x
+            
+            return cx + rx * scale, cy - ry * scale
+
+        for i, ent in enumerate(self.entities):
+            color = "yellow" if i == self.selected_index else "white"
+            
+            if ent["type"] == "block":
+                x, y, z = ent["x"], ent["y"], ent["z"]
+                sx, sy, sz = ent["sx"] / 2, ent["sy"] / 2, ent["sz"] / 2
+                
+                corners = [
+                    (x-sx, y-sy, z-sz), (x+sx, y-sy, z-sz), (x+sx, y-sy, z+sz), (x-sx, y-sy, z+sz),
+                    (x-sx, y+sy, z-sz), (x+sx, y+sy, z-sz), (x+sx, y+sy, z+sz), (x-sx, y+sy, z+sz)
+                ]
+                
+                proj = [project(px, py, pz) for px, py, pz in corners]
+                
+                edges = [(0,1), (1,2), (2,3), (3,0), (4,5), (5,6), (6,7), (7,4), (0,4), (1,5), (2,6), (3,7)]
+                for p1, p2 in edges:
+                    self.preview_canvas.create_line(proj[p1][0], proj[p1][1], proj[p2][0], proj[p2][1], fill=color)
+                    
+            elif ent["type"] == "enemy":
+                px, py = project(ent["x"], ent["y"], ent["z"])
+                self.preview_canvas.create_oval(px-3, py-3, px+3, py+3, outline="red", fill="red")
+
+    # ------------------------------------------------------------------ #
     #  ENTITY OPERATIONS                                                   #
     # ------------------------------------------------------------------ #
 
@@ -363,7 +446,7 @@ class SnowEditor(tk.Tk):
             "x": float(round(x)), "y": float(y), "z": float(round(z)),
             "sx": float(sx), "sy": float(sy), "sz": float(sz),
             "texture/enemy": tex,
-            "tile": 1 # Default to repeat texture
+            "tile": 1 
         })
         self.selected_index = len(self.entities) - 1
         self.populate_properties()
@@ -385,6 +468,20 @@ class SnowEditor(tk.Tk):
         if self.selected_index >= 0:
             del self.entities[self.selected_index]
             self.selected_index = -1
+            self.populate_properties()
+            self.draw_canvas()
+
+    def duplicate_object(self, event=None):
+        if self.selected_index >= 0:
+            new_ent = copy.deepcopy(self.entities[self.selected_index])
+            
+            # Shift slightly so it doesn't perfectly hide inside the original
+            new_ent["x"] += 1.0 
+            new_ent["z"] += 1.0
+            
+            self.entities.append(new_ent)
+            self.selected_index = len(self.entities) - 1
+            
             self.populate_properties()
             self.draw_canvas()
 
@@ -537,9 +634,17 @@ class SnowEditor(tk.Tk):
         if hit >= 0:
             self.selected_index = hit
             self.drag["mode"]   = "move"
+            
+            # FIXED: Capture the exact offset between mouse and object origin
+            ent = self.entities[hit]
+            self.drag["offset_x"] = float(ent["x"]) - wx
+            self.drag["offset_z"] = float(ent["z"]) - wz
+            
         else:
             self.selected_index = -1
             self.drag["mode"]   = None
+            self.drag["offset_x"] = 0
+            self.drag["offset_z"] = 0
 
         self.populate_properties()
         self.draw_canvas()
@@ -548,8 +653,14 @@ class SnowEditor(tk.Tk):
         wx, wz = self._s2w(event.x, event.y)
 
         if self.drag["mode"] == "move" and self.selected_index >= 0:
-            self.entities[self.selected_index]["x"] = round(wx * 2) / 2
-            self.entities[self.selected_index]["z"] = round(wz * 2) / 2
+            # FIXED: Apply the offset so it grabs exactly where you clicked
+            new_x = wx + self.drag.get("offset_x", 0)
+            new_z = wz + self.drag.get("offset_z", 0)
+            
+            # Still rounding to 0.5 to keep things nice and aligned to your map grid
+            self.entities[self.selected_index]["x"] = round(new_x * 2) / 2
+            self.entities[self.selected_index]["z"] = round(new_z * 2) / 2
+            
             self.populate_properties()
             self.draw_canvas()
 
@@ -614,7 +725,6 @@ class SnowEditor(tk.Tk):
             for ent in self.entities:
                 name = os.path.basename(ent["texture/enemy"])
                 if ent["type"] == "block":
-                    # ADDED TILE FLAG HERE:
                     tile_flag = ent.get('tile', 1)
                     f.write(f"block    {ent['x']}    {ent['y']}    {ent['z']}    "
                             f"{ent['sx']}    {ent['sy']}    {ent['sz']}    {name}    {tile_flag}\n")
@@ -637,7 +747,6 @@ class SnowEditor(tk.Tk):
                 p = line.strip().split()
                 if not p or line.startswith("#"): continue
                 if p[0] == "block" and len(p) >= 8:
-                    # ADDED SAFE PARSING FOR TILE FLAG
                     tile_val = int(p[8]) if len(p) >= 9 else 1
                     
                     self.entities.append({
