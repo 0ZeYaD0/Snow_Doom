@@ -7,6 +7,9 @@
 #include <game/enemies/enemy.h>
 #include <engine/map/mesh_generation.h>
 
+#include <engine/audio/audio_system.h>
+#include <engine/audio/audio_source.h>
+
 Game::Game()
     : delta_time(0.0f), last_frame(0.0f)
 {
@@ -14,6 +17,9 @@ Game::Game()
     window.SetWindowSize(1080, 720);
     window.SetWindowTitle("SNOW DOOM");
     window.InitializeWindow();
+
+    // AUDIO TEST
+    AudioSystem::Init();
 
     Input::Init(window.GetWindow());
 
@@ -54,6 +60,11 @@ Game::Game()
     Texture *enemy_tex = new Texture("res\\art\\santa.png");
 
     entities.push_back(new Enemy(glm::vec3(0.0f, 0.8f, -5.0f), player, sprite_quad, enemy_tex));
+
+    // AUDIO TEST
+    AudioBuffer* test_sound = new AudioBuffer("res/audio/loading.ogg");
+    AudioSource* test_source = new AudioSource();
+    test_source->Play(test_sound);
 }
 
 void Game::ProcessInput()
@@ -67,6 +78,9 @@ void Game::ProcessInput()
 
 Game::~Game()
 {
+    // TODO: refactor
+    AudioSystem::Cleanup();
+
     delete main_shader;
     delete player;
 }
