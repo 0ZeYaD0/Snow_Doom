@@ -48,7 +48,7 @@ Game::Game()
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
     // --- obj test
-    current_map = MapLoader::Load("res/maps/test3.map");
+    current_map = MapLoader::Load("res/maps/test.map");
 
     for (size_t i = 0; i < current_map.colliders.size(); i++)
     {
@@ -62,8 +62,8 @@ Game::Game()
     entities.push_back(new Enemy(glm::vec3(0.0f, 0.8f, -5.0f), player, sprite_quad, enemy_tex));
 
     // AUDIO TEST
-    AudioBuffer* test_sound = new AudioBuffer("res/audio/loading.ogg");
-    AudioSource* test_source = new AudioSource();
+    AudioBuffer *test_sound = new AudioBuffer("res/audio/loading.ogg");
+    AudioSource *test_source = new AudioSource();
     test_source->Play(test_sound);
 }
 
