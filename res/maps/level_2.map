@@ -1,0 +1,8 @@
+# SNOW DOOM MAP
+# block x y z sx sy sz texture [1=tile, 0=stretch]
+# enemy x y z model
+
+block    0.0    0.0    0.5    20.0    1.0    20.0    env_snow.png    1
+block    -26.0    8.0    1.0    20.0    1.0    20.0    env_snow.png    1
+block    -10.5    4.0    0.5    1.0    8.0    20.0    Brick04.png    1
+block    0.0    4.0    -10.0    20.0    8.0    1.0    Brick04.png    1
