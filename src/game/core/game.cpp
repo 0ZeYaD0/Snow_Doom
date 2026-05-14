@@ -42,7 +42,7 @@ Game::Game()
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
     // --- obj test
-    current_map = MapLoader::Load("res/maps/test.map");
+    current_map = MapLoader::Load("res/maps/test3.map");
 
     for (size_t i = 0; i < current_map.colliders.size(); i++)
     {
@@ -118,7 +118,7 @@ void Game::Render()
 
     main_shader->SetInt("u_Texture", 0);
     main_shader->SetInt("useTexture", 1);
-    
+
     for (const auto &map_ent : current_map.entities)
     {
         if (map_ent.texture)

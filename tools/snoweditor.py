@@ -1,0 +1,667 @@
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+import math
+import os
+
+ZOOM_DEFAULT = 10
+CANVAS_WIDTH  = 800
+CANVAS_HEIGHT = 600
+HANDLE_PX     = 7   # corner handle half-size in screen pixels
+
+class SnowEditor(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Snow Doom - Map Editor")
+        self.geometry("1280x800")
+
+        self.entities       = []
+        self.selected_index = -1
+
+        self.cam_x = 0.0
+        self.cam_z = 0.0
+        self.zoom  = ZOOM_DEFAULT
+
+        # drag state — mode: None | "move" | "resize"
+        self.drag = {"mode": None, "anchor_wx": 0, "anchor_wz": 0}
+
+        self.res_dir            = self._find_res_dir()
+        self.available_textures = []
+        self.available_models   = []
+        self.scan_assets()
+
+        self.setup_ui()
+        self.draw_canvas()
+
+    # ------------------------------------------------------------------ #
+    #  ASSET DISCOVERY                                                     #
+    # ------------------------------------------------------------------ #
+
+    def _find_res_dir(self):
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        candidates = [
+            os.path.join(script_dir, "..", "res"),
+            os.path.join(script_dir, "res"),
+            os.path.join(os.getcwd(), "..", "res"),
+            os.path.join(os.getcwd(), "res"),
+        ]
+        for p in candidates:
+            norm = os.path.normpath(p)
+            if os.path.isdir(norm) and os.path.isdir(os.path.join(norm, "texture")):
+                print(f"[SnowEditor] res: {norm}")
+                return norm
+        messagebox.showwarning("Assets Not Found",
+                               "Could not find the 'res' folder. Please select it manually.")
+        sel = filedialog.askdirectory(title="Select the Snow Doom 'res' folder")
+        if sel and os.path.isdir(sel):
+            return sel
+        return os.path.normpath(os.path.join(script_dir, "..", "res"))
+
+    def scan_assets(self):
+        tex_dir = os.path.join(self.res_dir, "texture")
+        mod_dir = os.path.join(self.res_dir, "models")
+        self.available_textures.clear()
+        self.available_models.clear()
+
+        if os.path.isdir(tex_dir):
+            for root, _, files in os.walk(tex_dir):
+                for f in sorted(files):
+                    if f.lower().endswith((".png", ".jpg")):
+                        rel = os.path.relpath(os.path.join(root, f), tex_dir)
+                        self.available_textures.append(rel.replace("\\", "/"))
+            self.available_textures.sort()
+        else:
+            self.available_textures = ["Stone/Stone01.png", "Brick/Brick01.png"]
+
+        if os.path.isdir(mod_dir):
+            for root, _, files in os.walk(mod_dir):
+                for f in sorted(files):
+                    if f.lower().endswith(".obj"):
+                        self.available_models.append(f)
+            self.available_models.sort()
+        else:
+            self.available_models = ["snowman.obj"]
+
+        print(f"[SnowEditor] {len(self.available_textures)} textures, {len(self.available_models)} models")
+
+    def change_res_folder(self):
+        sel = filedialog.askdirectory(title="Select the Snow Doom 'res' folder",
+                                      initialdir=self.res_dir)
+        if not sel:
+            return
+        if not os.path.isdir(os.path.join(sel, "texture")):
+            messagebox.showerror("Wrong Folder",
+                                 f"No 'texture' subfolder found in:\n{sel}\n\n"
+                                 "Please select the 'res' folder directly.")
+            return
+        self.res_dir = sel
+        self.scan_assets()
+        if self.selected_index >= 0:
+            self.populate_properties()
+        self._status(f"Assets reloaded: {self.res_dir}")
+
+    # ------------------------------------------------------------------ #
+    #  UI                                                                  #
+    # ------------------------------------------------------------------ #
+
+    def setup_ui(self):
+        # ── Canvas ───────────────────────────────────────────────────────
+        left = tk.Frame(self)
+        left.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self.canvas = tk.Canvas(left, bg="#1a1a1a", width=CANVAS_WIDTH, height=CANVAS_HEIGHT)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+        self.canvas.bind("<ButtonPress-1>",   self._click)
+        self.canvas.bind("<B1-Motion>",       self._drag_move)
+        self.canvas.bind("<ButtonRelease-1>", self._drop)
+        self.canvas.bind("<ButtonPress-3>",   self._pan_start)
+        self.canvas.bind("<B3-Motion>",       self._pan_drag)
+        self.canvas.bind("<Motion>",          self._hover)
+        self.canvas.bind("<MouseWheel>",      self._wheel)
+        self.canvas.bind("<Button-4>",        self._wheel)
+        self.canvas.bind("<Button-5>",        self._wheel)
+
+        self.status_var = tk.StringVar(value="Ready")
+        tk.Label(left, textvariable=self.status_var, anchor="w",
+                 font=("Courier", 9), bg="#111", fg="#aaa",
+                 bd=1, relief=tk.SUNKEN).pack(fill=tk.X)
+
+        # ── Right panel ──────────────────────────────────────────────────
+        right = tk.Frame(self, width=310, padx=8, pady=8)
+        right.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # File
+        tk.Label(right, text="File", font=("Arial", 11, "bold")).pack(anchor="w")
+        row = tk.Frame(right); row.pack(fill=tk.X, pady=(0, 2))
+        tk.Button(row, text="Load .map", command=self.load_map).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0,2))
+        tk.Button(row, text="Save .map", command=self.save_map).pack(side=tk.LEFT, fill=tk.X, expand=True)
+        tk.Button(right, text="Change Assets Folder", command=self.change_res_folder,
+                  font=("Arial", 8)).pack(fill=tk.X, pady=(2, 6))
+
+        ttk.Separator(right, orient="horizontal").pack(fill=tk.X, pady=4)
+
+        # ── Place ────────────────────────────────────────────────────────
+        tk.Label(right, text="Place", font=("Arial", 11, "bold")).pack(anchor="w")
+
+        tk.Button(right, text="  +  Block  (1 x 4 x 1)",
+                  command=lambda: self._add_block(x=self.cam_x, y=0, z=self.cam_z, sx=1, sy=4, sz=1),
+                  bg="#2a4a2a", fg="white", relief=tk.FLAT, pady=4
+                  ).pack(fill=tk.X, pady=2)
+
+        tk.Button(right, text="  +  Floor  (10 x 1 x 10)  — one slab",
+                  command=lambda: self._add_block(x=self.cam_x, y=0, z=self.cam_z, sx=10, sy=1, sz=10),
+                  bg="#1e3a50", fg="white", relief=tk.FLAT, pady=3
+                  ).pack(fill=tk.X, pady=1)
+
+        wf = tk.Frame(right); wf.pack(fill=tk.X, pady=1)
+        tk.Button(wf, text="+  Wall  (X axis)",
+                  command=lambda: self._add_block(x=self.cam_x, y=4, z=self.cam_z, sx=10, sy=8, sz=1),
+                  bg="#1e3a50", fg="white", relief=tk.FLAT, pady=3
+                  ).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 2))
+        tk.Button(wf, text="+  Wall  (Z axis)",
+                  command=lambda: self._add_block(x=self.cam_x, y=4, z=self.cam_z, sx=1, sy=8, sz=10),
+                  bg="#1e3a50", fg="white", relief=tk.FLAT, pady=3
+                  ).pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        tk.Button(right, text="  +  Enemy / Model",
+                  command=self._add_enemy,
+                  bg="#4a1a1a", fg="white", relief=tk.FLAT, pady=3
+                  ).pack(fill=tk.X, pady=(6, 0))
+
+        ttk.Separator(right, orient="horizontal").pack(fill=tk.X, pady=6)
+
+        # ── Entities list ────────────────────────────────────────────────
+        tk.Label(right, text="Entities", font=("Arial", 11, "bold")).pack(anchor="w")
+        self.listbox = tk.Listbox(right, height=7, font=("Courier", 8),
+                                  bg="#161616", fg="#cccccc", selectbackground="#334")
+        self.listbox.pack(fill=tk.X)
+        self.listbox.bind("<<ListboxSelect>>", self._listbox_select)
+        tk.Button(right, text="Delete Selected", command=self._delete,
+                  fg="red").pack(fill=tk.X, pady=(2, 0))
+
+        ttk.Separator(right, orient="horizontal").pack(fill=tk.X, pady=6)
+
+        # ── Properties ───────────────────────────────────────────────────
+        tk.Label(right, text="Properties", font=("Arial", 11, "bold")).pack(anchor="w")
+
+        pf = tk.Frame(right); pf.pack(fill=tk.X)
+        pf.columnconfigure(2, weight=1)
+
+        self.prop_vars = {}
+
+        # Position rows (no +/- needed for position, just type)
+        for r, (field, label) in enumerate([("type","Type"),("x","X"),("y","Y"),("z","Z")]):
+            tk.Label(pf, text=label, anchor="e", width=7,
+                     font=("Arial", 9)).grid(row=r, column=0, sticky="e", padx=(0,4), pady=2)
+            var = tk.StringVar()
+            self.prop_vars[field] = var
+            e = tk.Entry(pf, textvariable=var, font=("Courier", 9))
+            e.grid(row=r, column=1, columnspan=3, sticky="ew", pady=2)
+            e.bind("<KeyRelease>", self._prop_edit)
+            if field == "type":
+                e.configure(state="readonly")
+
+        # Separator
+        tk.Label(pf, text="Size", font=("Arial", 9, "bold"), fg="#888"
+                 ).grid(row=4, column=0, columnspan=4, sticky="w", padx=4, pady=(8,2))
+
+        # Size rows with − / + buttons
+        for r, (field, label) in enumerate([("sx","Width"),("sy","Height"),("sz","Depth")], start=5):
+            tk.Label(pf, text=label, anchor="e", width=7,
+                     font=("Arial", 9)).grid(row=r, column=0, sticky="e", padx=(0,4), pady=2)
+            tk.Button(pf, text="-", width=2,
+                      command=lambda f=field: self._nudge(f, -1)
+                      ).grid(row=r, column=1, padx=(0,1), pady=2)
+            var = tk.StringVar()
+            self.prop_vars[field] = var
+            e = tk.Entry(pf, textvariable=var, font=("Courier", 9))
+            e.grid(row=r, column=2, sticky="ew", pady=2)
+            e.bind("<KeyRelease>", self._prop_edit)
+            tk.Button(pf, text="+", width=2,
+                      command=lambda f=field: self._nudge(f, +1)
+                      ).grid(row=r, column=3, padx=(1,0), pady=2)
+
+        # TEXTURE TILING TOGGLE
+        self.tile_var = tk.IntVar(value=1)
+        self.tile_cb = tk.Checkbutton(pf, text="Repeat Texture (Tile) vs Stretch", variable=self.tile_var,
+                                      command=self._tile_edit, font=("Arial", 9))
+        self.tile_cb.grid(row=9, column=0, columnspan=4, sticky="w", padx=4, pady=(5,0))
+
+        # Y quick levels
+        yf = tk.Frame(right); yf.pack(fill=tk.X, pady=(6, 2))
+        tk.Label(yf, text="Y level:", font=("Arial", 8), fg="#888").pack(side=tk.LEFT)
+        for yv in [0, 4, 8, 12, 16]:
+            tk.Button(yf, text=str(yv), width=3, font=("Arial", 8),
+                      command=lambda v=yv: self._set_y(v)
+                      ).pack(side=tk.LEFT, padx=1)
+
+        ttk.Separator(right, orient="horizontal").pack(fill=tk.X, pady=6)
+
+        self.asset_label_var = tk.StringVar(value="Texture")
+        tk.Label(right, textvariable=self.asset_label_var,
+                 font=("Arial", 9), anchor="w").pack(anchor="w")
+        self.asset_combo = ttk.Combobox(right)
+        self.asset_combo.pack(fill=tk.X)
+        self.asset_combo.bind("<<ComboboxSelected>>", self._combo_edit)
+        self.asset_combo.bind("<KeyRelease>",         self._combo_edit)
+
+    # ------------------------------------------------------------------ #
+    #  COORDINATES                                                         #
+    # ------------------------------------------------------------------ #
+
+    def _w2s(self, wx, wz):
+        cw = self.canvas.winfo_width()  or CANVAS_WIDTH
+        ch = self.canvas.winfo_height() or CANVAS_HEIGHT
+        return ((wx - self.cam_x) * self.zoom + cw / 2,
+                (wz - self.cam_z) * self.zoom + ch / 2)
+
+    def _s2w(self, sx, sz):
+        cw = self.canvas.winfo_width()  or CANVAS_WIDTH
+        ch = self.canvas.winfo_height() or CANVAS_HEIGHT
+        return ((sx - cw / 2) / self.zoom + self.cam_x,
+                (sz - ch / 2) / self.zoom + self.cam_z)
+
+    # ------------------------------------------------------------------ #
+    #  DRAWING                                                             #
+    # ------------------------------------------------------------------ #
+
+    def draw_canvas(self):
+        self.canvas.delete("all")
+        cw = self.canvas.winfo_width()  or CANVAS_WIDTH
+        ch = self.canvas.winfo_height() or CANVAS_HEIGHT
+
+        for i in range(-200, 200, 10):
+            cx, _ = self._w2s(i, 0);  _, cz = self._w2s(0, i)
+            self.canvas.create_line(cx, 0, cx, ch, fill="#222222")
+            self.canvas.create_line(0, cz, cw,  cz, fill="#222222")
+        cx, _ = self._w2s(0, 0);  _, cz = self._w2s(0, 0)
+        self.canvas.create_line(cx, 0, cx, ch, fill="#333333", dash=(4, 4))
+        self.canvas.create_line(0, cz, cw,  cz, fill="#333333", dash=(4, 4))
+
+        for orig_i, ent in sorted(enumerate(self.entities),
+                                   key=lambda t: t[1].get("y", 0)):
+            self._draw_entity(ent, orig_i, orig_i == self.selected_index)
+
+        self.canvas.create_text(8, 8, anchor="nw",
+                                text=f"zoom x{self.zoom}  |  RMB=pan  scroll=zoom",
+                                fill="#444", font=("Courier", 8))
+        self._refresh_listbox()
+
+    def _draw_entity(self, ent, idx, selected):
+        outline = "#ffffff" if selected else "#000000"
+        lw      = 3        if selected else 1
+
+        if ent["type"] == "block":
+            color = self._block_color(ent)
+            hx = float(ent.get("sx", 1)) / 2.0
+            hz = float(ent.get("sz", 1)) / 2.0
+            ex = float(ent["x"]); ez = float(ent["z"])
+            x1, z1 = self._w2s(ex - hx, ez - hz)
+            x2, z2 = self._w2s(ex + hx, ez + hz)
+            
+            # If stretching, make the block outline dashed to distinguish visually in editor
+            if ent.get("tile", 1) == 0:
+                self.canvas.create_rectangle(x1, z1, x2, z2,
+                                             fill=color, outline=outline, width=lw, dash=(4,4))
+            else:
+                self.canvas.create_rectangle(x1, z1, x2, z2,
+                                             fill=color, outline=outline, width=lw)
+
+            # Texture label
+            if self.zoom >= 7:
+                lx, lz = self._w2s(ex, ez)
+                self.canvas.create_text(lx, lz,
+                    text=os.path.basename(ent.get("texture/enemy", "")),
+                    fill="#dddddd", font=("Arial", max(7, int(self.zoom * 0.65))))
+
+            # Y badge so you can see height layers
+            bx, bz = self._w2s(ex - hx + 0.15, ez - hz + 0.15)
+            self.canvas.create_text(bx, bz, anchor="nw",
+                text=f"y={ent.get('y', 0)}",
+                fill="#cccccc" if selected else "#555555",
+                font=("Courier", 7))
+
+            # Corner resize handles when selected
+            if selected:
+                for chx, chz in [(ex-hx, ez-hz), (ex+hx, ez-hz),
+                                  (ex-hx, ez+hz), (ex+hx, ez+hz)]:
+                    px, pz = self._w2s(chx, chz)
+                    self.canvas.create_rectangle(
+                        px - HANDLE_PX, pz - HANDLE_PX,
+                        px + HANDLE_PX, pz + HANDLE_PX,
+                        fill="#ffffff", outline="#000000", width=1)
+
+        elif ent["type"] == "enemy":
+            r = max(5, int(self.zoom * 0.65))
+            ex, ez = float(ent["x"]), float(ent["z"])
+            px, pz = self._w2s(ex, ez)
+            self.canvas.create_oval(px-r, pz-r, px+r, pz+r,
+                                    fill="#cc0000", outline=outline, width=lw)
+            if self.zoom >= 7:
+                self.canvas.create_text(px, pz + r + 9,
+                    text=os.path.basename(ent.get("texture/enemy", "")),
+                    fill="#ff6666", font=("Arial", max(7, int(self.zoom * 0.6))))
+
+    def _block_color(self, ent):
+        t = ent.get("texture/enemy", "").lower()
+        if "brick"   in t: return "#7a2020"
+        if "wood"    in t: return "#6b3510"
+        if "stone"   in t: return "#606060"
+        if "tile"    in t: return "#006060"
+        if "door"    in t: return "#b8880f"
+        if "cursed"  in t: return "#6a1fa8"
+        if "scenery" in t: return "#1a6a1a"
+        return "#404040"
+
+    # ------------------------------------------------------------------ #
+    #  ENTITY OPERATIONS                                                   #
+    # ------------------------------------------------------------------ #
+
+    def _add_block(self, x=0, y=0, z=0, sx=1, sy=4, sz=1):
+        tex = self.available_textures[0] if self.available_textures else "Stone/Stone01.png"
+        self.entities.append({
+            "type": "block",
+            "x": float(round(x)), "y": float(y), "z": float(round(z)),
+            "sx": float(sx), "sy": float(sy), "sz": float(sz),
+            "texture/enemy": tex,
+            "tile": 1 # Default to repeat texture
+        })
+        self.selected_index = len(self.entities) - 1
+        self.populate_properties()
+        self.draw_canvas()
+
+    def _add_enemy(self):
+        mdl = self.available_models[0] if self.available_models else "snowman.obj"
+        self.entities.append({
+            "type": "enemy",
+            "x": float(round(self.cam_x)), "y": 0.0, "z": float(round(self.cam_z)),
+            "sx": "-", "sy": "-", "sz": "-",
+            "texture/enemy": mdl
+        })
+        self.selected_index = len(self.entities) - 1
+        self.populate_properties()
+        self.draw_canvas()
+
+    def _delete(self):
+        if self.selected_index >= 0:
+            del self.entities[self.selected_index]
+            self.selected_index = -1
+            self.populate_properties()
+            self.draw_canvas()
+
+    # ------------------------------------------------------------------ #
+    #  PROPERTIES PANEL                                                    #
+    # ------------------------------------------------------------------ #
+
+    def populate_properties(self):
+        for var in self.prop_vars.values():
+            var.set("")
+        self.asset_combo.set("")
+
+        if not (0 <= self.selected_index < len(self.entities)):
+            self.tile_cb.config(state="disabled")
+            return
+
+        ent = self.entities[self.selected_index]
+        for field, var in self.prop_vars.items():
+            var.set(str(ent.get(field, "")))
+
+        if ent["type"] == "block":
+            self.asset_combo["values"] = self.available_textures
+            self.asset_label_var.set("Texture")
+            self.tile_cb.config(state="normal")
+            self.tile_var.set(ent.get("tile", 1))
+        else:
+            self.asset_combo["values"] = self.available_models
+            self.asset_label_var.set("Model")
+            self.tile_cb.config(state="disabled")
+            self.tile_var.set(0)
+            
+        self.asset_combo.set(ent.get("texture/enemy", ""))
+
+    def _prop_edit(self, event=None):
+        if not (0 <= self.selected_index < len(self.entities)):
+            return
+        ent = self.entities[self.selected_index]
+        for field, var in self.prop_vars.items():
+            if field == "type":
+                continue
+            val = var.get().strip()
+            try:
+                if field in ("x","y","z","sx","sy","sz") and val not in ("", "-"):
+                    ent[field] = float(val)
+                else:
+                    ent[field] = val
+            except ValueError:
+                pass
+        self.draw_canvas()
+
+    def _combo_edit(self, event=None):
+        if 0 <= self.selected_index < len(self.entities):
+            self.entities[self.selected_index]["texture/enemy"] = self.asset_combo.get()
+            self.draw_canvas()
+
+    def _tile_edit(self):
+        if 0 <= self.selected_index < len(self.entities):
+            self.entities[self.selected_index]["tile"] = self.tile_var.get()
+            self.draw_canvas()
+
+    def _nudge(self, field, delta):
+        if not (0 <= self.selected_index < len(self.entities)):
+            return
+        ent = self.entities[self.selected_index]
+        if str(ent.get(field, "-")) == "-":
+            return
+        try:
+            ent[field] = max(0.5, float(ent[field]) + delta)
+            self.prop_vars[field].set(str(ent[field]))
+            self.draw_canvas()
+        except (ValueError, KeyError):
+            pass
+
+    def _set_y(self, yval):
+        if not (0 <= self.selected_index < len(self.entities)):
+            return
+        self.entities[self.selected_index]["y"] = float(yval)
+        self.prop_vars["y"].set(str(float(yval)))
+        self.draw_canvas()
+
+    def _refresh_listbox(self):
+        self.listbox.delete(0, tk.END)
+        for i, ent in enumerate(self.entities):
+            base = os.path.splitext(os.path.basename(ent["texture/enemy"]))[0]
+            if ent["type"] == "block":
+                parts = ent["texture/enemy"].replace("\\", "/").split("/")
+                cat   = parts[0] if len(parts) > 1 else ""
+                label = f"[{i}] Block  y={ent.get('y',0)}  [{cat}] {base}"
+            else:
+                label = f"[{i}] Enemy  {base}"
+            self.listbox.insert(tk.END, label)
+            if i == self.selected_index:
+                self.listbox.selection_set(i)
+
+    def _listbox_select(self, event):
+        sel = self.listbox.curselection()
+        if sel:
+            self.selected_index = sel[0]
+            self.populate_properties()
+            self.draw_canvas()
+
+    # ------------------------------------------------------------------ #
+    #  CANVAS EVENTS                                                       #
+    # ------------------------------------------------------------------ #
+
+    def _hit_corner(self, sx, sz):
+        if not (0 <= self.selected_index < len(self.entities)):
+            return None
+        ent = self.entities[self.selected_index]
+        if ent["type"] != "block":
+            return None
+        ex = float(ent["x"]); ez = float(ent["z"])
+        hx = float(ent["sx"]) / 2; hz = float(ent["sz"]) / 2
+
+        corners = [
+            ((ex-hx, ez-hz), (ex+hx, ez+hz)),
+            ((ex+hx, ez-hz), (ex-hx, ez+hz)),
+            ((ex-hx, ez+hz), (ex+hx, ez-hz)),
+            ((ex+hx, ez+hz), (ex-hx, ez-hz)),
+        ]
+        for (cwx, cwz), (awx, awz) in corners:
+            px, pz = self._w2s(cwx, cwz)
+            if abs(sx - px) <= HANDLE_PX and abs(sz - pz) <= HANDLE_PX:
+                return (awx, awz)
+        return None
+
+    def _click(self, event):
+        wx, wz = self._s2w(event.x, event.y)
+
+        anchor = self._hit_corner(event.x, event.y)
+        if anchor is not None:
+            self.drag["mode"]      = "resize"
+            self.drag["anchor_wx"] = anchor[0]
+            self.drag["anchor_wz"] = anchor[1]
+            return
+
+        hit = -1
+        for i in range(len(self.entities) - 1, -1, -1):
+            ent = self.entities[i]
+            if ent["type"] == "block":
+                hx = float(ent["sx"]) / 2
+                hz = float(ent["sz"]) / 2
+                if (float(ent["x"]) - hx <= wx <= float(ent["x"]) + hx and
+                        float(ent["z"]) - hz <= wz <= float(ent["z"]) + hz):
+                    hit = i; break
+            elif ent["type"] == "enemy":
+                if math.hypot(float(ent["x"]) - wx, float(ent["z"]) - wz) < 1.0:
+                    hit = i; break
+
+        if hit >= 0:
+            self.selected_index = hit
+            self.drag["mode"]   = "move"
+        else:
+            self.selected_index = -1
+            self.drag["mode"]   = None
+
+        self.populate_properties()
+        self.draw_canvas()
+
+    def _drag_move(self, event):
+        wx, wz = self._s2w(event.x, event.y)
+
+        if self.drag["mode"] == "move" and self.selected_index >= 0:
+            self.entities[self.selected_index]["x"] = round(wx * 2) / 2
+            self.entities[self.selected_index]["z"] = round(wz * 2) / 2
+            self.populate_properties()
+            self.draw_canvas()
+
+        elif self.drag["mode"] == "resize" and self.selected_index >= 0:
+            ent    = self.entities[self.selected_index]
+            aw, az = self.drag["anchor_wx"], self.drag["anchor_wz"]
+            new_sx = max(0.5, abs(wx - aw))
+            new_sz = max(0.5, abs(wz - az))
+            ent["sx"] = round(new_sx * 2) / 2
+            ent["sz"] = round(new_sz * 2) / 2
+            ent["x"]  = round(((wx + aw) / 2) * 2) / 2
+            ent["z"]  = round(((wz + az) / 2) * 2) / 2
+            self.populate_properties()
+            self.draw_canvas()
+
+    def _drop(self, event):
+        self.drag["mode"] = None
+
+    def _pan_start(self, event):
+        self.drag["pan_sx"] = event.x
+        self.drag["pan_sz"] = event.y
+
+    def _pan_drag(self, event):
+        dx = (event.x - self.drag["pan_sx"]) / self.zoom
+        dz = (event.y - self.drag["pan_sz"]) / self.zoom
+        self.cam_x -= dx; self.cam_z -= dz
+        self.drag["pan_sx"] = event.x
+        self.drag["pan_sz"] = event.y
+        self.draw_canvas()
+
+    def _hover(self, event):
+        wx, wz = self._s2w(event.x, event.y)
+        sel = f"  sel:[{self.selected_index}]" if self.selected_index >= 0 else ""
+        self._status(f"({wx:.1f}, {wz:.1f})  entities:{len(self.entities)}{sel}")
+
+    def _wheel(self, event):
+        if event.num == 4 or getattr(event, "delta", 0) > 0:
+            self.zoom = min(self.zoom + 1, 50)
+        else:
+            self.zoom = max(self.zoom - 1, 2)
+        self.draw_canvas()
+
+    def _status(self, msg):
+        self.status_var.set(msg)
+
+    # ------------------------------------------------------------------ #
+    #  SAVE / LOAD                                                         #
+    # ------------------------------------------------------------------ #
+
+    def save_map(self):
+        maps_dir = os.path.join(self.res_dir, "maps")
+        os.makedirs(maps_dir, exist_ok=True)
+        fp = filedialog.asksaveasfilename(
+            defaultextension=".map", filetypes=[("Map Files", "*.map")],
+            initialdir=maps_dir)
+        if not fp: return
+
+        with open(fp, "w") as f:
+            f.write("# SNOW DOOM MAP\n")
+            f.write("# block x y z sx sy sz texture [1=tile, 0=stretch]\n")
+            f.write("# enemy x y z model\n\n")
+            for ent in self.entities:
+                name = os.path.basename(ent["texture/enemy"])
+                if ent["type"] == "block":
+                    # ADDED TILE FLAG HERE:
+                    tile_flag = ent.get('tile', 1)
+                    f.write(f"block    {ent['x']}    {ent['y']}    {ent['z']}    "
+                            f"{ent['sx']}    {ent['sy']}    {ent['sz']}    {name}    {tile_flag}\n")
+                elif ent["type"] == "enemy":
+                    f.write(f"enemy    {ent['x']}    {ent['y']}    {ent['z']}    {name}\n")
+
+        self._status(f"Saved: {os.path.basename(fp)}")
+        messagebox.showinfo("Saved", "Map saved!")
+
+    def load_map(self):
+        maps_dir = os.path.join(self.res_dir, "maps")
+        os.makedirs(maps_dir, exist_ok=True)
+        fp = filedialog.askopenfilename(
+            filetypes=[("Map Files", "*.map")], initialdir=maps_dir)
+        if not fp: return
+
+        self.entities.clear()
+        with open(fp, "r") as f:
+            for line in f:
+                p = line.strip().split()
+                if not p or line.startswith("#"): continue
+                if p[0] == "block" and len(p) >= 8:
+                    # ADDED SAFE PARSING FOR TILE FLAG
+                    tile_val = int(p[8]) if len(p) >= 9 else 1
+                    
+                    self.entities.append({
+                        "type": "block",
+                        "x": float(p[1]), "y": float(p[2]), "z": float(p[3]),
+                        "sx": float(p[4]), "sy": float(p[5]), "sz": float(p[6]),
+                        "texture/enemy": p[7],
+                        "tile": tile_val
+                    })
+                elif p[0] == "enemy" and len(p) >= 5:
+                    self.entities.append({
+                        "type": "enemy",
+                        "x": float(p[1]), "y": float(p[2]), "z": float(p[3]),
+                        "sx": "-", "sy": "-", "sz": "-",
+                        "texture/enemy": p[4]
+                    })
+
+        self.selected_index = -1
+        self.populate_properties()
+        self.draw_canvas()
+        self._status(f"Loaded: {os.path.basename(fp)}  ({len(self.entities)} entities)")
+        messagebox.showinfo("Loaded", "Map loaded!")
+
+
+if __name__ == "__main__":
+    app = SnowEditor()
+    app.mainloop()

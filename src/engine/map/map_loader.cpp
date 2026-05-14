@@ -3,10 +3,11 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <string>
 
 namespace MapLoader
 {
-    static Mesh BuildCubeMesh(glm::vec3 pos, glm::vec3 size)
+    static Mesh BuildCubeMesh(glm::vec3 pos, glm::vec3 size, bool tile = true)
     {
         glm::vec3 h = size * 0.5f;
 
@@ -48,11 +49,15 @@ namespace MapLoader
             u32 base = static_cast<u32>(verts.size());
 
             float tileFactor = 0.5f;
+
+            float u_max = tile ? (f.scale.x * tileFactor) : 1.0f;
+            float v_max = tile ? (f.scale.y * tileFactor) : 1.0f;
+
             glm::vec2 uvs[4] = {
                 {0, 0},
-                {f.scale.x * tileFactor, 0},
-                {f.scale.x * tileFactor, f.scale.y * tileFactor},
-                {0, f.scale.y * tileFactor}};
+                {u_max, 0},
+                {u_max, v_max},
+                {0, v_max}};
 
             for (int i = 0; i < 4; i++)
             {
@@ -120,6 +125,11 @@ namespace MapLoader
                     textureName = token;
                 }
 
+                int tileFlag = 1;
+                ss >> tileFlag;
+                bool shouldTile = (tileFlag != 0);
+                // ------------------------------------------
+
                 if (textureCache.find(textureName) == textureCache.end())
                 {
                     string folderName = "";
@@ -147,7 +157,10 @@ namespace MapLoader
                 result.colliders.push_back(AABB::fromPosSize(pos, size));
 
                 MapEntity entity;
-                entity.mesh = BuildCubeMesh(pos, size);
+
+                entity.mesh = BuildCubeMesh(pos, size, shouldTile);
+                // --------------------------------------------------------------
+
                 entity.texture = textureCache[textureName];
                 result.entities.push_back(entity);
             }
