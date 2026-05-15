@@ -128,7 +128,6 @@ namespace MapLoader
                 int tileFlag = 1;
                 ss >> tileFlag;
                 bool shouldTile = (tileFlag != 0);
-                // ------------------------------------------
 
                 if (textureCache.find(textureName) == textureCache.end())
                 {
@@ -159,10 +158,46 @@ namespace MapLoader
                 MapEntity entity;
 
                 entity.mesh = BuildCubeMesh(pos, size, shouldTile);
-                // --------------------------------------------------------------
 
                 entity.texture = textureCache[textureName];
                 result.entities.push_back(entity);
+            }
+
+            else if (token == "enemy")
+            {
+                float x, y, z;
+                string textureName;
+                if (!(ss >> x >> y >> z >> textureName))
+                {
+                    std::cerr << "MapLoader: bad enemy line: " << line << "\n";
+                    continue;
+                }
+
+                if (textureCache.find(textureName) == textureCache.end())
+                {
+                    string folderName = "";
+                    for (char c : textureName)
+                    {
+                        if (std::isalpha(c))
+                        {
+                            folderName += c;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    string fullPath = textureBasePath + folderName + "/" + textureName;
+                    textureCache[textureName] = std::make_shared<Texture>(fullPath);
+                }
+
+                // Store the parsed enemy spawn data into our result
+                EnemySpawnData enemy_data;
+                enemy_data.pos = glm::vec3(x, y, z);
+                enemy_data.texture = textureCache[textureName];
+
+                result.enemies.push_back(enemy_data);
             }
         }
 

@@ -33,15 +33,18 @@ block    0.0    -8.0    11.5    3.5    9.0    3.5    env_snow.png    1
 block    31.0    -5.0    51.0    11.5    13.0    3.0    Brick01.png    1
 block    52.5    -5.0    56.0    3.5    13.0    3.5    Brick01.png    1
 block    31.5    -5.0    57.5    3.5    13.0    3.5    Brick01.png    1
-enemy    31.5    0.0    57.5    snowman.obj
-enemy    -14.0    0.0    53.0    snowman.obj
-enemy    -29.0    0.0    57.0    snowman.obj
-enemy    -45.0    0.0    58.0    snowman.obj
-enemy    -61.5    0.0    54.0    snowman.obj
-enemy    6.0    0.0    84.0    snowman.obj
+enemy    31.5    0.0    57.5    env_santa.png
+enemy    -14.0    1.0    53.0    env_santa.png
+enemy    -29.0    1.0    57.0    env_santa.png
+enemy    -45.0    1.0    58.0    env_santa.png
+enemy    -61.5    1.0    54.0    env_santa.png
+enemy    6.0    0.0    84.0    env_santa.png
 block    6.0    -5.0    65.0    3.5    13.0    3.5    Brick01.png    1
 block    8.5    -2.0    97.5    8.0    25.0    1.0    Brick04.png    1
 block    -7.5    -2.0    97.5    8.0    25.0    1.0    Brick04.png    1
 block    0.5    4.0    97.5    8.0    7.0    1.0    Doors01.png    0
 block    0.5    -1.0    95.5    21.0    3.0    3.5    Stone01.png    1
 block    0.5    -5.0    97.5    8.0    12.0    1.0    Brick04.png    1
+enemy    6.0    1.0    28.0    env_santa.png
+enemy    -5.0    1.0    22.5    env_santa.png
+enemy    -1.0    1.0    39.5    env_santa.png

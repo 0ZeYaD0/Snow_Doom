@@ -58,18 +58,20 @@ Game::Game()
     }
 
     Mesh *sprite_quad = new Mesh(BuildSpriteQuad());
-    Texture *enemy_tex = new Texture("res\\art\\santa.png");
-
     AudioBuffer *snd_death = new AudioBuffer("res/audio/death/4.ogg");
 
-    // 2. Create the enemy object
-    Enemy *test_enemy = new Enemy(glm::vec3(0.0f, 0.8f, -5.0f), player, sprite_quad, enemy_tex);
+    for (const auto &enemy_data : current_map.enemies)
+    {
+        Enemy *new_enemy = new Enemy(
+            enemy_data.pos,
+            player,
+            sprite_quad,
+            enemy_data.texture.get());
 
-    // 3. Plug the sounds into the enemy's component
-    test_enemy->sfx_death = snd_death;
+        new_enemy->sfx_death = snd_death;
 
-    // 4. Add the fully configured enemy to the world
-    entities.push_back(test_enemy);
+        entities.push_back(new_enemy);
+    }
 }
 
 void Game::ProcessInput()

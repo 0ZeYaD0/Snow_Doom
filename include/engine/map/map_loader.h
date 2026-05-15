@@ -15,6 +15,12 @@ struct MapBlock
     glm::vec3 size;
 };
 
+struct EnemySpawnData
+{
+    glm::vec3 pos;
+    std::shared_ptr<Texture> texture;
+};
+
 struct MapEntity
 {
     Mesh mesh;
@@ -27,6 +33,7 @@ struct LoadMap
     vector<MapBlock> blocks;
     vector<AABB> colliders;
     vector<MapEntity> entities;
+    vector<EnemySpawnData> enemies;
 };
 
 namespace MapLoader
