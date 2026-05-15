@@ -33,7 +33,7 @@ private:
     const f32 JUMP_FORCE = 10.0f;
 
     // Dash
-    const f32 DASH_SPEED = 30.0f;
+    const f32 DASH_SPEED = 25.0f;
     const f32 DASH_JUMP_FORCE = 2.0f;
     const int MAX_DASH_CHARGES = 3;
     const f32 DASH_RECHARGE_TIME = 2.0f;
