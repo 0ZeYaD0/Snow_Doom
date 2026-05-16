@@ -1,14 +1,19 @@
 #include <game/core/game.h>
 #include <engine/graphics/object_loader.h>
 #include <GLFW/glfw3.h>
+#include <algorithm>
 #include <engine/core/input.h>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <game/enemies/enemy.h>
 #include <engine/map/mesh_generation.h>
+#include <game/entities/door.h>
 
 #include <engine/audio/audio_system.h>
 #include <engine/audio/audio_source.h>
+
+#include <game/entities/pickup.h>
+#include <game/entities/door.h>
 
 Game::Game()
     : delta_time(0.0f), last_frame(0.0f)
@@ -25,6 +30,7 @@ Game::Game()
 
     Input::BindAxis("MoveForward", KeyCode::W, KeyCode::S);
     Input::BindAxis("MoveRight", KeyCode::D, KeyCode::A);
+    Input::BindAction("Interact", KeyCode::E);
 
     Input::BindAction("Jump", KeyCode::Space);
     Input::BindAction("Dash", KeyCode::LeftShift);
@@ -72,6 +78,37 @@ Game::Game()
 
         entities.push_back(new_enemy);
     }
+
+    // --- INTERACTION SYSTEM TEST SETUP ---
+    Texture *key_tex = new Texture("res/art/key.png");
+    Pickup *test_key = new Pickup(
+        glm::vec3(5.0f, 1.0f, 5.0f),
+        player,
+        sprite_quad,
+        key_tex,
+        PickupType::KEY,
+        "red_key");
+    entities.push_back(test_key);
+
+    Texture *banana_tex = new Texture("res/art/fruit_banana.png");
+    Pickup *test_weapon = new Pickup(
+        glm::vec3(-5.0f, 1.0f, 5.0f),
+        player,
+        sprite_quad,
+        banana_tex,
+        PickupType::WEAPON,
+        "banana_gun");
+    entities.push_back(test_weapon);
+
+    Texture *door_tex = new Texture("res/texture/Doors/Doors01.png");
+    Door *test_door = new Door(
+        glm::vec3(0.0f, 1.5f, 7.0f),
+        glm::vec3(2.0f, 3.0f, 0.5f),
+        player,
+        sprite_quad,
+        door_tex,
+        "red_key");
+    entities.push_back(test_door);
 }
 
 void Game::ProcessInput()
@@ -114,12 +151,38 @@ void Game::Run()
 
 void Game::Update()
 {
-    player->UpdatePlayer(delta_time, level_colliders, entities);
-
     for (auto &entity : entities)
     {
         entity->Update(delta_time);
     }
+
+    entities.erase(std::remove_if(entities.begin(), entities.end(),
+                                  [](Entity *e)
+                                  {
+                                      if (e->pending_destroy)
+                                      {
+                                          delete e;
+                                          return true;
+                                      }
+                                      return false;
+                                  }),
+                   entities.end());
+
+    vector<AABB> current_frame_colliders = level_colliders;
+
+    for (auto &entity : entities)
+    {
+        Door *door = dynamic_cast<Door *>(entity);
+        if (door != nullptr)
+        {
+            if (!door->IsOpen())
+            {
+                current_frame_colliders.push_back(door->GetCollider());
+            }
+        }
+    }
+
+    player->UpdatePlayer(delta_time, current_frame_colliders, entities);
 }
 
 void Game::Render()

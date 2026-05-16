@@ -82,6 +82,13 @@ public:
     Player(glm::vec3 spawn_pos);
     ~Player();
 
+    // INVENTORY
+    vector<string> inventory_keys;
+
+    void GiveKey(const string &key_id);
+    bool HasKey(const string &key_id);
+    void EquipWeapon(const string &weapon_id);
+
     void UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<Entity *> &entities);
 
 private:

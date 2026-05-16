@@ -286,3 +286,37 @@ void Player::PlayShootSound()
 {
     PlaySoundOverlapped(sfx_shoot);
 }
+
+void Player::GiveKey(const string &key_id)
+{
+    inventory_keys.push_back(key_id);
+    std::cout << "u have me bby" << key_id << "\n";
+}
+
+bool Player::HasKey(const string &key_id)
+{
+    for (const auto &key : inventory_keys)
+    {
+        if (key == key_id)
+            return true;
+    }
+    return false;
+}
+
+void Player::EquipWeapon(const string &weapon_id)
+{
+    if (current_weapon != nullptr)
+    {
+        delete current_weapon;
+        current_weapon = nullptr;
+    }
+
+    if (weapon_id == "banana_gun")
+    {
+        current_weapon = new Banana();
+        std::cout << "I am a banana \n";
+    }
+
+    else
+        std::cout << "WTF THERE IS ME IF U KNOW U KNOW \n";
+}

@@ -22,7 +22,7 @@ class Transform
 public:
     glm::vec3 position = glm::vec3(0.0f);
     glm::vec3 rotation = glm::vec3(0.0f); // euler angles
-    glm::vec3 scale    = glm::vec3(1.0f);
+    glm::vec3 scale = glm::vec3(1.0f);
 
     glm::mat4 GetModelMatrix() const
     {
@@ -48,6 +48,8 @@ public:
     CollisionTag tag = CollisionTag::DEFAULT;
     Hurtable *health = nullptr;
 
+    bool pending_destroy = false;
+
     Entity(Mesh *mesh, CollisionTag tag = CollisionTag::DEFAULT) : mesh(mesh), tag(tag) {}
 
     virtual void Update(f32 delta_time) {}
@@ -57,8 +59,7 @@ public:
         shader.Use();
         shader.SetMat4("model", transform.GetModelMatrix());
 
-        if(mesh) {
+        if (mesh)
             mesh->Draw(shader);
-        }
     }
 };
