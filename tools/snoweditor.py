@@ -42,7 +42,7 @@ class SnowEditor(tk.Tk):
         self.bind("<Control-D>", self.duplicate_object)
 
     # ------------------------------------------------------------------ #
-    #  ASSET DISCOVERY                                                     #
+    #  ASSET DISCOVERY                                                   #
     # ------------------------------------------------------------------ #
 
     def _find_res_dir(self):
