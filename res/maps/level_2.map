@@ -1,55 +1,46 @@
 # SNOW DOOM MAP
-# block x y z sx sy sz texture [1=tile, 0=stretch]
-# enemy x y z model
-# door x y z sx sy sz req_key texture
-# pickup x y z type item_id texture
+# block	x	y	z	sx	sy	sz	texture	[1=tile, 0=stretch]
+# enemy	x	y	z	texture
+# door	x	y	z	sx	sy	sz	req_key	texture	[1=tile, 0=stretch]
+# pickup	x	y	z	type	item_id	texture
 
-block    0.5    -7.0    0.0    20.5    16.0    19.5    env/snow.png    1
-block    -10.0    -2.0    19.0    1.5    25.0    57.5    Brick/Brick04.png    1
-block    10.5    -2.0    18.5    1.5    25.0    56.5    Brick/Brick04.png    1
-block    0.5    4.0    -10.0    21.0    14.0    1.0    Brick/Brick04.png    1
-block    -1.0    -10.0    57.5    136.0    1.0    98.5    Cursed/Cursed02.png    1
-block    -5.0    -5.0    22.5    3.5    13.0    3.5    Brick/Brick01.png    1
-block    -5.0    -5.0    65.0    2.5    13.0    7.5    Brick/Brick01.png    1
-block    9.0    -5.0    54.0    3.5    13.0    3.5    Brick/Brick01.png    1
-block    -1.0    -5.0    39.5    3.5    13.0    3.5    Brick/Brick01.png    1
-block    6.0    -5.0    28.0    3.5    13.0    3.5    Brick/Brick01.png    1
-block    38.0    -2.0    46.5    56.5    25.0    1.5    Brick/Brick04.png    1
-block    6.0    -5.0    83.5    3.5    13.0    3.5    Brick/Brick01.png    1
-block    -37.5    -2.0    47.0    56.5    25.0    1.5    Brick/Brick04.png    1
-block    -4.0    -5.0    85.0    3.5    13.0    3.5    Brick/Brick01.png    1
-block    -38.0    -2.0    61.5    56.0    25.0    1.5    Brick/Brick04.png    1
-block    38.5    -2.0    61.0    56.0    25.0    1.5   Brick/Brick04.png    1
-block    -10.5    -2.0    79.0    2.0    25.0    36.5    Brick/Brick04.png    1
-block    11.5    -2.0    79.0    2.0    25.0    37.5    Brick/Brick04.png    1
-block    -17.0    -1.0    52.5    11.5    3.0    5.0    Stone/Stone01.png    1
-block    -29.0    -1.0    57.0    6.0    3.0    4.0    Stone/Stone01.png    1
-block    -39.0    -1.0    51.0    8.5    3.0    2.0    Stone/Stone01.png    1
-block    -45.5    -1.0    54.5    22.0    3.0    2.0    Stone/Stone01.png    1
-block    -40.5    -1.0    58.0    12.0    3.0    2.5    Stone/Stone01.png    1
-block    -65.0    -2.0    54.0    1.5    25.0    15.5    Brick/Brick04.png    1
-block    -61.5    -1.0    54.5    3.5    3.0    11.5    Stone/Stone01.png    1
-block    -3.5    -10.0    11.5    3.5    7.0    3.5    env/snow.png    1
-block    -7.0    -11.0    11.5    4.5    5.0    3.5     env/snow.png    1
-block    0.0    -8.0    11.5    3.5    9.0    3.5     env/snow.png    1
-block    31.0    -5.0    51.0    11.5    13.0    3.0    Brick/Brick01.png    1
-block    52.5    -5.0    56.0    3.5    13.0    3.5    Brick/Brick01.png    1
-block    31.5    -5.0    57.5    3.5    13.0    3.5    Brick/Brick01.png    1
-enemy    31.5    1.0    57.5    mobs/env_santa.png
-enemy    -14.0    1.0    53.0    mobs/env_santa.png
-enemy    -29.0    1.0    57.0    mobs/env_santa.png
-enemy    -45.0    1.0    58.0    mobs/env_santa.png
-enemy    -61.5    1.0    54.0    mobs/env_santa.png
-enemy    6.0    0.0    84.0    mobs/env_santa.png
-block    6.0    -5.0    65.0    3.5    13.0    3.5    Brick/Brick01.png    1
-block    8.5    -2.0    97.5    8.0    25.0    1.0    Brick/Brick04.png    1
-block    -7.5    -2.0    97.5    8.0    25.0    1.0    Brick/Brick04.png    1
-block    0.5    -1.0    95.5    21.0    3.0    3.5    Stone/Stone01.png    1
-block    0.5    -5.0    97.5    8.0    12.0    1.0    Brick/Brick04.png    1
-enemy    6.0    1.0    28.0    mobs/env_santa.png
-enemy    -5.0    1.0    22.5    mobs/env_santa.png
-enemy    -1.0    1.0    39.5    mobs/env_santa.png
-enemy    9.0    1.0    53.5    mobs/env_santa.png
-enemy    4.5    1.0    6.0    mobs/env_santa.png
-door    -2.5    1.0    6.5    5.5    4.0    2.5    red_key    Doors/Doors01.png
-pickup    5.0    0.0    -1.5    KEY    red_key    Brick/Brick01.png
+block	0.5	-7.0	0.0	20.5	16.0	19.5	env/snow.png	1
+block	-10.0	-2.0	19.0	1.5	25.0	57.5	Brick/Brick04.png	1
+block	10.5	-2.0	18.5	1.5	25.0	56.5	Brick/Brick04.png	1
+block	0.5	4.0	-10.0	21.0	14.0	1.0	Brick/Brick04.png	1
+block	1.0	-10.0	50.5	136.0	1.0	98.5	env/snow.png	1
+block	-5.0	-5.0	22.5	3.5	13.0	3.5	Brick/Brick01.png	1
+block	-5.0	-5.0	65.0	2.5	13.0	7.5	Brick/Brick01.png	1
+block	9.0	-5.0	54.0	3.5	13.0	3.5	Brick/Brick01.png	1
+block	-1.0	-5.0	39.5	3.5	13.0	3.5	Brick/Brick01.png	1
+block	6.0	-5.0	28.0	3.5	13.0	3.5	Brick/Brick01.png	1
+block	38.0	-2.0	46.5	56.5	25.0	1.5	Brick/Brick04.png	1
+block	6.0	-5.0	83.5	3.5	13.0	3.5	Brick/Brick01.png	1
+block	-37.5	-2.0	47.0	56.5	25.0	1.5	Brick/Brick04.png	1
+block	-4.0	-5.0	85.0	3.5	13.0	3.5	Brick/Brick01.png	1
+block	-38.0	-2.0	61.5	56.0	25.0	1.5	Brick/Brick04.png	1
+block	38.5	-2.0	61.0	56.0	25.0	1.5	Brick/Brick04.png	1
+block	-10.5	-2.0	79.0	2.0	25.0	36.5	Brick/Brick04.png	1
+block	11.5	-2.0	79.0	2.0	25.0	37.5	Brick/Brick04.png	1
+block	-17.0	-1.0	52.5	11.5	3.0	5.0	Stone/Stone01.png	1
+block	-29.0	-1.0	57.0	6.0	3.0	4.0	Stone/Stone01.png	1
+block	-39.0	-1.0	51.0	8.5	3.0	2.0	Stone/Stone01.png	1
+block	-45.5	-1.0	54.5	22.0	3.0	2.0	Stone/Stone01.png	1
+block	-40.5	-1.0	58.0	12.0	3.0	2.5	Stone/Stone01.png	1
+block	-65.0	-2.0	54.0	1.5	25.0	15.5	Brick/Brick04.png	1
+block	-61.5	-1.0	54.5	3.5	3.0	11.5	Stone/Stone01.png	1
+block	-3.5	-10.0	11.5	3.5	7.0	3.5	env/snow.png	1
+block	-7.0	-11.0	11.5	4.5	5.0	3.5	env/snow.png	1
+block	0.0	-9.0	11.5	3.5	9.0	3.5	env/snow.png	1
+block	31.0	-5.0	51.0	11.5	13.0	3.0	Brick/Brick01.png	1
+block	52.5	-5.0	56.0	3.5	13.0	3.5	Brick/Brick01.png	1
+block	31.5	-5.0	57.5	3.5	13.0	3.5	Brick/Brick01.png	1
+block	6.0	-5.0	65.0	3.5	13.0	3.5	Brick/Brick01.png	1
+block	8.5	-2.0	97.5	8.0	25.0	1.0	Brick/Brick04.png	1
+block	-7.5	-2.0	97.5	8.0	25.0	1.0	Brick/Brick04.png	1
+pickup	5.0	0.0	-1.5	KEY	red_key	Brick/Brick01.png
+block	3.5	-6.0	11.0	3.5	7.0	3.5	env/snow.png	1
+block	0.5	-1.0	93.5	20.0	3.0	6.5	Stone/Stone01.png	1
+door	0.5	0.0	97.5	8.0	4.0	1.0	none	Brick/Brick01.png	1
+pickup	-3.5	0.0	3.0	KEY	red_key	env/key.png
+block	7.5	-4.0	11.0	4.5	7.0	3.0	env/snow.png	1

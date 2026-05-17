@@ -28,7 +28,7 @@ private:
     const f32 GROUND_ACCEL = 10.0f;
     const f32 MAX_AIR_SPEED = 13.0f;
     const f32 AIR_ACCEL = 2.0f;
-    const f32 GROUND_FRICTION = 9.0f;
+    const f32 GROUND_FRICTION = 13.0f;
     const f32 STOP_SPEED_THRESHOLD = 0.1f;
     const f32 JUMP_FORCE = 10.0f;
 
@@ -90,7 +90,6 @@ public:
     void EquipWeapon(const string &weapon_id);
 
     void UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<Entity *> &entities);
-
 
 private:
     // --- ARCH ---
