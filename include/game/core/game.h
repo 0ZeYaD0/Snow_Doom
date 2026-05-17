@@ -40,6 +40,7 @@ private:
     Shader *main_shader;
     LoadMap current_map;
 
+    vector<AABB> current_frame_colliders;
     vector<Mesh> loaded_meshes;
     vector<Mesh> floor_meshes;
     vector<Entity *> entities;

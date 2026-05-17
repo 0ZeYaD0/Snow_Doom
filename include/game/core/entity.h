@@ -14,14 +14,15 @@ enum class CollisionTag
     DEFAULT = 0,
     ENVIRONMENT,
     PLAYER,
-    ENEMY
+    ENEMY,
+    PROJECTILE
 };
 
 class Transform
 {
 public:
     glm::vec3 position = glm::vec3(0.0f);
-    glm::vec3 rotation = glm::vec3(0.0f); // euler angles
+    glm::vec3 rotation = glm::vec3(0.0f);
     glm::vec3 scale = glm::vec3(1.0f);
 
     glm::mat4 GetModelMatrix() const
