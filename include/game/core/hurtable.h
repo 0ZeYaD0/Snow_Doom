@@ -22,6 +22,7 @@ public:
     void Heal(f32 amt);
 
     f32 GetCurrHP() const { return curr_hp; }
+    f32 GetMaxHP() const {return max_hp; }
     
     f32 MaxHP(f32 amt = -1) {
         if(amt == -1)

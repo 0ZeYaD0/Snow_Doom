@@ -15,6 +15,8 @@ private:
     void DrawWeapon(UIManager& ui, const Window& window, const Player* player);
     void DrawSpeedLines(UIManager& ui, const Window& window, const Player* player);
     void DrawCrosshair(UIManager& ui, const Window& window, const Player* player, f32 delta_time);
+    void DrawHealthBar(UIManager& ui, const Window& window, const Player* player);
+    void DrawAmmo(UIManager& ui, const Window& window, const Player* player);
 
 public:
     PlayerHUD();
@@ -41,12 +43,12 @@ private:
     bool was_reloading = false;
 
     // --- Configuration Constants ---
-    const f32 CROSSHAIR_DOT_SIZE = 4.0f;
+    const f32 CROSSHAIR_DOT_SIZE = 5.0f;
     const f32 CROSSHAIR_LINE_LENGTH = 12.0f;
-    const f32 CROSSHAIR_LINE_THICKNESS = 2.0f;
+    const f32 CROSSHAIR_LINE_THICKNESS = 3.0f;
     const f32 CROSSHAIR_BASE_GAP = 8.0f;
     const f32 CROSSHAIR_MAX_GAP = 24.0f; 
-    const f32 CROSSHAIR_RING_BASE_SIZE = 35.0f;
+    const f32 CROSSHAIR_RING_BASE_SIZE = 45.0f;
     
     // crosshair animation constants
     const f32 CROSSHAIR_EXPAND_SPEED = 15.0f; 
