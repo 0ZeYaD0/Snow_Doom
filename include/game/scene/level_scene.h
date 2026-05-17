@@ -38,6 +38,7 @@ private:
     LoadMap current_map;
     PlayerHUD player_hud;
 
+    vector<AABB> current_frame_colliders;
     vector<AABB> level_colliders;
     vector<Entity *> entities;
 };

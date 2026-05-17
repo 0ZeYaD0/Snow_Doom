@@ -7,6 +7,7 @@
 #include <game/enemies/enemy.h>
 #include <game/entities/pickup.h>
 #include <game/entities/door.h>
+#include <game/entities/projectile.h>
 
 #include <algorithm>
 
@@ -17,41 +18,78 @@ LevelScene::LevelScene(const string &map_file, Window *game_window, UIManager *u
 
 void LevelScene::Init(SceneManager *manager)
 {
+    Input::ToggleCursor(window->GetWindow());
+
     scene_manager = manager;
 
+    // shaders
     main_shader = new Shader("res/shaders/vertex.glsl", "res/shaders/fragment.glsl");
+
+    // hud
     player_hud.Init();
 
+    // player
     player = new Player(glm::vec3(0.0f, 4.0f, 0.0f));
-    player->sfx_shoot = new AudioBuffer("res/audio/shoot.ogg");
+    AudioBuffer *snd_player_shoot = new AudioBuffer("res/audio/shoot.ogg");
+    player->sfx_shoot = snd_player_shoot;
 
-    current_map = MapLoader::Load(map_filepath);
-    
+    glEnable(GL_DEPTH_TEST);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
+    // map
+    current_map = MapLoader::Load("res/maps/test1.map");
     for (size_t i = 0; i < current_map.colliders.size(); i++)
-    {
         level_colliders.push_back(current_map.colliders[i]);
-    }
 
-    Mesh* sprite_quad = new Mesh(BuildSpriteQuad());
-    AudioBuffer* snd_death = new AudioBuffer("res/audio/death/4.ogg");
+    current_frame_colliders = level_colliders;
 
-    for (const auto& enemy_data : current_map.enemies)
+    Mesh *sprite_quad = new Mesh(BuildSpriteQuad());
+    AudioBuffer *snd_death = new AudioBuffer("res/audio/death/4.ogg");
+    AudioBuffer *snd_enemy_shoot = new AudioBuffer("res/audio/snowball_sound.ogg");
+    Texture *enemy_bullet_tex = new Texture("res/art/snowball.png");
+
+    for (const auto &enemy_data : current_map.enemies)
     {
-        Enemy* new_enemy = new Enemy(enemy_data.pos, player, sprite_quad, enemy_data.texture.get());
+        Enemy *new_enemy = new Enemy(
+            enemy_data.pos,
+            player,
+            sprite_quad,
+            enemy_data.texture.get());
+
         new_enemy->sfx_death = snd_death;
+        new_enemy->sfx_shoot = snd_enemy_shoot;
+
+        new_enemy->SetLevelData(&current_frame_colliders, &entities);
+        new_enemy->SetProjectileVisuals(sprite_quad, enemy_bullet_tex);
         entities.push_back(new_enemy);
     }
 
-    for (const auto& pickup_data : current_map.pickups)
+    // ── pickups
+    for (const auto &pickup_data : current_map.pickups)
     {
-        Pickup* new_pickup = new Pickup(pickup_data.pos, player, sprite_quad, pickup_data.texture.get(), pickup_data.type, pickup_data.item_id);
+        Pickup *new_pickup = new Pickup(
+            pickup_data.pos,
+            player,
+            sprite_quad,
+            pickup_data.texture.get(),
+            pickup_data.type,
+            pickup_data.item_id);
         entities.push_back(new_pickup);
     }
 
-    for (const auto& door_data : current_map.doors)
+    // ── doors
+    for (const auto &door_data : current_map.doors)
     {
-        Mesh* door_mesh = new Mesh(MapLoader::BuildCubeMesh(glm::vec3(0.0f), door_data.size, door_data.should_tile));
-        Door* new_door = new Door(door_data.pos, door_data.size, player, door_mesh, door_data.texture.get(), door_data.req_key);
+        Mesh *door_mesh = new Mesh(
+            MapLoader::BuildCubeMesh(glm::vec3(0.0f), door_data.size, door_data.should_tile));
+
+        Door *new_door = new Door(
+            door_data.pos,
+            door_data.size,
+            player,
+            door_mesh,
+            door_data.texture.get(),
+            door_data.req_key);
         entities.push_back(new_door);
     }
 }
@@ -63,11 +101,13 @@ void LevelScene::ProcessInput()
 
 void LevelScene::Update(f32 dt)
 {
+    // This loop now automatically updates projectiles spawned by the player or enemies
     for (auto& entity : entities)
     {
         entity->Update(dt);
     }
 
+    // Automatically cleans up projectiles when they flag themselves as pending_destroy
     entities.erase(std::remove_if(
         entities.begin(), entities.end(),
         [](Entity* e) {
@@ -91,6 +131,7 @@ void LevelScene::Update(f32 dt)
         }
     }
 
+    // Player gets the reference to entities here, allowing the Weapon class to spawn and push new Projectiles directly into the list
     player->UpdatePlayer(dt, current_frame_colliders, entities);
 }
 
@@ -117,13 +158,14 @@ void LevelScene::Render(f32 dt)
 
     main_shader->SetInt("useTexture", 0);
 
+    // This loop automatically renders the projectiles
     for (const auto& entity : entities)
     {
         entity->Draw(*main_shader);
     }
 
     ui_manager->Begin(*window);
-    player_hud.Render(*ui_manager, *window, player, dt); // Pass actual dt later
+    player_hud.Render(*ui_manager, *window, player, dt); 
     ui_manager->End();
 }
 

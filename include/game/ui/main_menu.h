@@ -5,6 +5,7 @@
 #include <engine/window/window.h>
 #include <engine/ui/ui_manager.h>
 #include <engine/graphics/texture.h>
+#include <engine/map/map_loader.h>
 
 #include <glm/glm.hpp>
 
@@ -32,4 +33,8 @@ private:
     glm::vec4 quit_btn_bounds;
 
     bool CheckButtonClick(glm::vec4 bounds, f32 mouse_x, f32 mouse_y);
+
+    Shader* bg_shader;
+    LoadMap bg_map;
+    f32 camera_angle;
 };

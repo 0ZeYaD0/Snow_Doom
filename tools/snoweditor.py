@@ -147,8 +147,47 @@ class SnowEditor(tk.Tk):
                  bd=1, relief=tk.SUNKEN).pack(fill=tk.X)
 
         # ── Right panel ──────────────────────────────────────────────────
-        right = tk.Frame(self, width=310, padx=8, pady=8)
-        right.pack(side=tk.RIGHT, fill=tk.Y)
+        # ── Right panel ──────────────────────────────────────────────────
+        # 1. Create a fixed-width container for the canvas and scrollbar
+        right_container = tk.Frame(self, width=330)
+        right_container.pack(side=tk.RIGHT, fill=tk.Y)
+        right_container.pack_propagate(False) # Prevents it from shrinking to fit contents
+
+        # 2. Create the Canvas and Scrollbar
+        self.right_canvas = tk.Canvas(right_container, highlightthickness=0)
+        self.right_scrollbar = ttk.Scrollbar(right_container, orient="vertical", command=self.right_canvas.yview)
+        
+        # 3. Create the actual 'right' frame inside the canvas
+        right = tk.Frame(self.right_canvas, padx=8, pady=8)
+        
+        self.right_canvas.configure(yscrollcommand=self.right_scrollbar.set)
+        
+        self.right_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.right_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        # 4. Create a window in the canvas to hold the frame
+        self.right_canvas_window = self.right_canvas.create_window((0, 0), window=right, anchor="nw")
+        
+        # 5. Bind configure events to update scroll region and width dynamically
+        def _configure_right_frame(event):
+            self.right_canvas.configure(scrollregion=self.right_canvas.bbox("all"))
+        right.bind("<Configure>", _configure_right_frame)
+        
+        def _configure_right_canvas(event):
+            self.right_canvas.itemconfig(self.right_canvas_window, width=event.width)
+        self.right_canvas.bind("<Configure>", _configure_right_canvas)
+
+        # 6. Setup cross-platform mouse wheel scrolling logic
+        def _on_right_scroll(event):
+            # event.delta works for Windows/macOS, event.num handles Linux (X11)
+            if event.num == 4 or getattr(event, "delta", 0) > 0:
+                self.right_canvas.yview_scroll(-1, "units")
+            elif event.num == 5 or getattr(event, "delta", 0) < 0:
+                self.right_canvas.yview_scroll(1, "units")
+
+        self.right_canvas.bind("<MouseWheel>", _on_right_scroll)
+        self.right_canvas.bind("<Button-4>", _on_right_scroll)
+        self.right_canvas.bind("<Button-5>", _on_right_scroll)
 
         # File
         tk.Label(right, text="File", font=("Arial", 11, "bold")).pack(anchor="w")

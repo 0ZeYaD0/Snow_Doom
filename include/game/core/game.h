@@ -1,18 +1,9 @@
 #pragma once
 
 #include <engine/core/defines.h>
-
 #include <engine/window/window.h>
-#include <game/player/camera.h>
-#include <engine/graphics/shader.h>
-#include <game/player/player.h>
-#include <engine/physics/aabb.h>
 #include <engine/ui/ui_manager.h>
-#include <game/ui/playerHUD.h>
-#include <engine/map/map_loader.h>
-
-#include <vector>
-using std::vector;
+#include <game/scene/scene_manager.h>
 
 class Game
 {
@@ -30,21 +21,10 @@ private:
     void Update();
     void Render();
 
-    Player *player;
-    vector<AABB> level_colliders;
     Window window;
+    UIManager ui_manager;
+    SceneManager scene_manager;
 
     f32 delta_time;
     f32 last_frame;
-
-    Shader *main_shader;
-    LoadMap current_map;
-
-    vector<AABB> current_frame_colliders;
-    vector<Mesh> loaded_meshes;
-    vector<Mesh> floor_meshes;
-    vector<Entity *> entities;
-
-    UIManager ui_manager;
-    PlayerHUD player_hud;
 };
