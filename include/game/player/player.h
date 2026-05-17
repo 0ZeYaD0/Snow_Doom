@@ -91,6 +91,7 @@ public:
 
     void UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<Entity *> &entities);
 
+
 private:
     // --- ARCH ---
     void UpdateTimers(f32 delta_time);
@@ -122,4 +123,8 @@ public:
     f32 GetDashRechargeTimer() const { return dash_recharge_timer; }
     f32 GetDashRechargeTime() const { return DASH_RECHARGE_TIME; }
     f32 GetSpeedLinesOpacity() const { return speed_lines_opacity; }
+
+    f32 GetHealth() const { return health.GetCurrHP(); }
+    f32 GetMaxHealth() const { return health.GetMaxHP(); }
+    Weapon *GetActiveWeapon() const { return current_weapon; }
 };

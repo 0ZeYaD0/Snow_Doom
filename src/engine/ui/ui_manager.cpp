@@ -232,12 +232,11 @@ void UIManager::DrawRect(glm::vec2 position, glm::vec2 size, glm::vec4 color, gl
 
     if (fill_amount > 0.0f) {
         f32 clamped_fill = glm::clamp(fill_amount, 0.0f, 1.0f);
-        f32 fg_height = size.y * clamped_fill;
         
-        glm::vec2 fg_pos = position;
-        fg_pos.y += (size.y - fg_height);
+        f32 fg_width = size.x * clamped_fill;
         
-        glm::vec2 fg_size = glm::vec2(size.x, fg_height);
+        glm::vec2 fg_pos = position; 
+        glm::vec2 fg_size = glm::vec2(fg_width, size.y);
         
         PushQuad(fg_pos, fg_size, color);
     }

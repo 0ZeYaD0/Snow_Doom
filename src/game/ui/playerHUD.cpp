@@ -28,6 +28,8 @@ void PlayerHUD::Render(UIManager& ui, const Window& window, const Player* player
     DrawDashCounter(ui, window, player);
     DrawWeapon(ui, window, player);
     DrawCrosshair(ui, window, player, delta_time);
+    DrawHealthBar(ui, window, player);
+    DrawAmmo(ui, window, player);
 }
 
 void PlayerHUD::DrawSpeedLines(UIManager& ui, const Window& window, const Player* player)
@@ -67,27 +69,30 @@ void PlayerHUD::DrawWeapon(UIManager& ui, const Window& window, const Player* pl
 
 void PlayerHUD::DrawDashCounter(UIManager& ui, const Window& window, const Player* player)
 {
-    f32 box_size = 30.0f;
-    f32 padding = 10.0f;
-    f32 start_x = 20.0f;
-    f32 start_y = window.GetHeight() - 50.0f;
+    int max_dashes = player->GetMaxDashCharges();
+    int current_dashes = player->GetDashCharges();
+    
+    f32 recharge_pct = player->GetDashRechargeTimer() / player->GetDashRechargeTime(); 
 
-    for (int i = 0; i < player->GetMaxDashCharges(); i++)
+    glm::vec2 size(40.0f, 15.0f);
+    
+    f32 health_bar_height = 30.0f;
+    f32 bottom_margin = 40.0f;
+    f32 gap = 15.0f; 
+    
+    f32 base_y = window.GetHeight() - bottom_margin - health_bar_height - gap - size.y;
+    glm::vec2 start_pos(40.0f, base_y); 
+    
+    glm::vec4 active_col(0.9f, 0.9f, 0.9f, 1.0f); 
+    glm::vec4 bg_col(0.2f, 0.2f, 0.2f, 0.5f);  
+    
+    for(int i = 0; i < max_dashes; i++)
     {
-        glm::vec2 pos(start_x + (i * (box_size + padding)), start_y);
-        glm::vec2 size(box_size, box_size);
-
         f32 fill = 0.0f;
-        if (i < player->GetDashCharges())
-            fill = 1.0f;
-        else if (i == player->GetDashCharges())
-            fill = player->GetDashRechargeTimer() / player->GetDashRechargeTime();
+        if (i < current_dashes) fill = 1.0f;
+        else if (i == current_dashes) fill = recharge_pct;
 
-        glm::vec4 color(0.0f, 1.0f, 1.0f, 1.0f);
-        glm::vec4 bg_color(0.2f, 0.2f, 0.2f, 1.0f);
-
-        // We use a new generic DrawRect function here!
-        ui.DrawRect(pos, size, color, bg_color, fill);
+        ui.DrawRect(start_pos + glm::vec2(i * (size.x + 10.0f), 0.0f), size, active_col, bg_col, fill);
     }
 }
 
@@ -174,5 +179,41 @@ void PlayerHUD::DrawCrosshair(UIManager& ui, const Window& window, const Player*
         f32 actual_ring_size = CROSSHAIR_RING_BASE_SIZE * crosshair_ring_scale;
         glm::vec2 ring_pos = center - glm::vec2(actual_ring_size / 2.0f);
         ui.DrawSprite(crosshair_ring_tex, ring_pos, glm::vec2(actual_ring_size), crosshair_rotation, color);
+    }
+}
+
+void PlayerHUD::DrawHealthBar(UIManager& ui, const Window& window, const Player* player)
+{
+    f32 health_pct = player->GetHealth() / player->GetMaxHealth(); 
+    
+    glm::vec2 size(300.0f, 30.0f);
+    glm::vec2 pos(40.0f, window.GetHeight() - size.y - 40.0f); 
+    
+    glm::vec4 bg_color(0.1f, 0.1f, 0.1f, 0.8f);
+    glm::vec4 hp_color(0.7f, 0.1f, 0.1f, 1.0f);
+    
+    ui.DrawRect(pos, size, hp_color, bg_color, health_pct);
+}
+
+void PlayerHUD::DrawAmmo(UIManager& ui, const Window& window, const Player* player)
+{
+    Weapon* weapon = player->GetActiveWeapon();
+    if (!weapon) return;
+    
+    int current_ammo = weapon->GetCurrentAmmo();
+    int mag_size = weapon->GetMaxAmmo();
+    
+    glm::vec2 bullet_size(25.0f, 8.0f);
+    
+    glm::vec2 start_pos(window.GetWidth() - 40.0f - bullet_size.x, window.GetHeight() - 40.0f - bullet_size.y);
+    
+    glm::vec4 bullet_col(0.8f, 0.6f, 0.1f, 1.0f); 
+    glm::vec4 spent_col(0.15f, 0.15f, 0.15f, 0.6f);
+    
+    for(int i = 0; i < mag_size; i++)
+    {
+        glm::vec4 col = (i < current_ammo) ? bullet_col : spent_col;
+        
+        ui.DrawRect(start_pos - glm::vec2(0.0f, i * (bullet_size.y + 5.0f)), bullet_size, col, glm::vec4(0.0f), 1.0f);
     }
 }
