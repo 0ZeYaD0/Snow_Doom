@@ -5,7 +5,7 @@
 #include <game/scene/scene_manager.h>
 #include <game/scene/level_scene.h>
 
-MainMenuScene::MainMenuScene(Window* game_window, UIManager* ui)
+MainMenuScene::MainMenuScene(Window *game_window, UIManager *ui)
     : window(game_window), ui_manager(ui), title_tex(nullptr), play_btn_tex(nullptr), quit_btn_tex(nullptr)
 {
     title_tex = new Texture("res/art/snow_doom_title.png");
@@ -27,14 +27,14 @@ void MainMenuScene::Init(SceneManager *manager)
     Input::ToggleCursor(window->GetWindow());
 
     bg_shader = new Shader("res/shaders/vertex.glsl", "res/shaders/fragment.glsl");
-    
-    bg_map = MapLoader::Load("res/maps/main_menu.map"); 
+
+    bg_map = MapLoader::Load("res/maps/main_menu.map");
     camera_angle = 0.0f;
 }
 
 void MainMenuScene::ProcessInput()
 {
-    if(Input::GetActionDown("Fire"))
+    if (Input::GetActionDown("Fire"))
     {
         auto mouse_pos = Input::GetMousePosition();
         f32 mx = mouse_pos.x;
@@ -43,7 +43,7 @@ void MainMenuScene::ProcessInput()
         if (CheckButtonClick(play_btn_bounds, mx, my))
         {
             // play game
-            scene_manager->ChangeScene(new LevelScene("res/maps/test1.map", window, ui_manager));
+            scene_manager->ChangeScene(new LevelScene("res/maps/level_2.map", window, ui_manager));
         }
         else if (CheckButtonClick(quit_btn_bounds, mx, my))
         {
@@ -81,23 +81,24 @@ void MainMenuScene::Render(f32 dt)
     bg_shader->SetMat4("view", view);
     bg_shader->SetMat4("projection", proj);
     bg_shader->SetMat4("model", glm::mat4(1.0f));
-    
+
     // Optional: Dim the background slightly darker than the main game so the UI pops out more
-    bg_shader->SetVec4("col", 0.4f, 0.4f, 0.4f, 1.0f); 
-    
+    bg_shader->SetVec4("col", 0.4f, 0.4f, 0.4f, 1.0f);
+
     bg_shader->SetInt("u_Texture", 0);
     bg_shader->SetInt("useTexture", 1);
 
     // Draw the static level geometry
-    for (const auto& map_ent : bg_map.entities)
+    for (const auto &map_ent : bg_map.entities)
     {
-        if (map_ent.texture) map_ent.texture->Bind(0);
+        if (map_ent.texture)
+            map_ent.texture->Bind(0);
         map_ent.mesh.Draw(*bg_shader);
     }
     bg_shader->SetInt("useTexture", 0);
 
     ui_manager->Begin(*window);
-    
+
     auto mouse_pos = Input::GetMousePosition();
     f32 mx = mouse_pos.x;
     f32 my = mouse_pos.y;
@@ -107,7 +108,7 @@ void MainMenuScene::Render(f32 dt)
 
     glm::vec2 title_size(600.0f, 300.0f);
     glm::vec2 title_pos((window->GetWidth() / 2.0f) - (title_size.x / 2.0f), 80.0f);
-    if (title_tex) 
+    if (title_tex)
     {
         ui_manager->DrawSprite(title_tex, title_pos, title_size, 0.0f, glm::vec4(1.0f));
     }
@@ -115,21 +116,19 @@ void MainMenuScene::Render(f32 dt)
     if (play_btn_tex)
     {
         ui_manager->DrawSprite(
-            play_btn_tex, 
-            {play_btn_bounds.x, play_btn_bounds.y}, 
-            {play_btn_bounds.z, play_btn_bounds.w}, 
-            0.0f, play_color
-        );
+            play_btn_tex,
+            {play_btn_bounds.x, play_btn_bounds.y},
+            {play_btn_bounds.z, play_btn_bounds.w},
+            0.0f, play_color);
     }
 
     if (quit_btn_tex)
     {
         ui_manager->DrawSprite(
-            quit_btn_tex, 
+            quit_btn_tex,
             {quit_btn_bounds.x, quit_btn_bounds.y},
-            {quit_btn_bounds.z, quit_btn_bounds.w}, 
-            0.0f, quit_color
-        );
+            {quit_btn_bounds.z, quit_btn_bounds.w},
+            0.0f, quit_color);
     }
 
     ui_manager->End();
@@ -137,10 +136,14 @@ void MainMenuScene::Render(f32 dt)
 
 void MainMenuScene::Cleanup()
 {
-    if (title_tex) delete title_tex;
-    if (play_btn_tex) delete play_btn_tex;
-    if (quit_btn_tex) delete quit_btn_tex;
-    if (bg_shader) delete bg_shader;
+    if (title_tex)
+        delete title_tex;
+    if (play_btn_tex)
+        delete play_btn_tex;
+    if (quit_btn_tex)
+        delete quit_btn_tex;
+    if (bg_shader)
+        delete bg_shader;
 }
 
 bool MainMenuScene::CheckButtonClick(glm::vec4 bounds, f32 mouse_x, f32 mouse_y)

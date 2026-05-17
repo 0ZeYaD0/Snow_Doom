@@ -37,7 +37,7 @@ void LevelScene::Init(SceneManager *manager)
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
     // map
-    current_map = MapLoader::Load("res/maps/test1.map");
+    current_map = MapLoader::Load(map_filepath);
     for (size_t i = 0; i < current_map.colliders.size(); i++)
         level_colliders.push_back(current_map.colliders[i]);
 
@@ -102,29 +102,30 @@ void LevelScene::ProcessInput()
 void LevelScene::Update(f32 dt)
 {
     // This loop now automatically updates projectiles spawned by the player or enemies
-    for (auto& entity : entities)
+    for (auto &entity : entities)
     {
         entity->Update(dt);
     }
 
     // Automatically cleans up projectiles when they flag themselves as pending_destroy
     entities.erase(std::remove_if(
-        entities.begin(), entities.end(),
-        [](Entity* e) {
-            if (e->pending_destroy) {
-                delete e;
-                return true;
-            }
-            return false;
-        }),
-        entities.end()
-    );
+                       entities.begin(), entities.end(),
+                       [](Entity *e)
+                       {
+                           if (e->pending_destroy)
+                           {
+                               delete e;
+                               return true;
+                           }
+                           return false;
+                       }),
+                   entities.end());
 
     std::vector<AABB> current_frame_colliders = level_colliders;
 
-    for (auto& entity : entities)
+    for (auto &entity : entities)
     {
-        Door* door = dynamic_cast<Door*>(entity);
+        Door *door = dynamic_cast<Door *>(entity);
         if (door != nullptr && !door->IsOpen())
         {
             current_frame_colliders.push_back(door->GetCollider());
@@ -146,26 +147,27 @@ void LevelScene::Render(f32 dt)
     main_shader->SetMat4("projection", proj);
     main_shader->SetMat4("model", glm::mat4(1.0f));
     main_shader->SetVec4("col", 1.0f, 0.5f, 0.2f, 1.0f);
-    
+
     main_shader->SetInt("u_Texture", 0);
     main_shader->SetInt("useTexture", 1);
 
-    for (const auto& map_ent : current_map.entities)
+    for (const auto &map_ent : current_map.entities)
     {
-        if (map_ent.texture) map_ent.texture->Bind(0);
+        if (map_ent.texture)
+            map_ent.texture->Bind(0);
         map_ent.mesh.Draw(*main_shader);
     }
 
     main_shader->SetInt("useTexture", 0);
 
     // This loop automatically renders the projectiles
-    for (const auto& entity : entities)
+    for (const auto &entity : entities)
     {
         entity->Draw(*main_shader);
     }
 
     ui_manager->Begin(*window);
-    player_hud.Render(*ui_manager, *window, player, dt); 
+    player_hud.Render(*ui_manager, *window, player, dt);
     ui_manager->End();
 }
 
@@ -173,6 +175,7 @@ void LevelScene::Cleanup()
 {
     delete main_shader;
     delete player;
-    for(auto e : entities) delete e;
+    for (auto e : entities)
+        delete e;
     entities.clear();
 }
