@@ -1,0 +1,12 @@
+# SNOW DOOM MAP
+# block	x	y	z	sx	sy	sz	texture	[1=tile, 0=stretch]
+# enemy	x	y	z	texture
+# door	x	y	z	sx	sy	sz	req_key	texture	[1=tile, 0=stretch]
+# pickup	x	y	z	type	item_id	texture
+
+block	3.5	0.0	0.0	23.0	0.0	23.0	Brick/Brick01.png	0
+door	4.0	2.5	5.0	5.0	5.0	2.0	red_key	Doors/Doors01.png	0
+pickup	-3.0	0.0	-0.5	KEY	red_key	Brick/Brick01.png
+enemy	12.5	1.0	2.0	mobs/env_santa.png
+door	4.0	2.5	-8.5	10.0	4.0	1.5	blue_key	Brick/Brick01.png	0
+pickup	-3.0	0.0	-4.5	KEY	blue_key	Cursed/Cursed04.png

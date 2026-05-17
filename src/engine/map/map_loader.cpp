@@ -7,7 +7,7 @@
 
 namespace MapLoader
 {
-    static Mesh BuildCubeMesh(glm::vec3 pos, glm::vec3 size, bool tile = true)
+    Mesh BuildCubeMesh(glm::vec3 pos, glm::vec3 size, bool tile = true)
     {
         glm::vec3 h = size * 0.5f;
 
@@ -114,16 +114,11 @@ namespace MapLoader
             {
                 float x, y, z, sx, sy, sz;
                 if (!(ss >> x >> y >> z >> sx >> sy >> sz))
-                {
-                    std::cerr << "MapLoader: bad block line: " << line << "\n";
                     continue;
-                }
 
                 string textureName = defaultTextureName;
                 if (ss >> token)
-                {
                     textureName = token;
-                }
 
                 int tileFlag = 1;
                 ss >> tileFlag;
@@ -131,21 +126,7 @@ namespace MapLoader
 
                 if (textureCache.find(textureName) == textureCache.end())
                 {
-                    string folderName = "";
-                    for (char c : textureName)
-                    {
-                        if (std::isalpha(c))
-                        {
-                            folderName += c;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    string fullPath = textureBasePath + folderName + "/" + textureName;
-
+                    string fullPath = textureBasePath + textureName;
                     textureCache[textureName] = std::make_shared<Texture>(fullPath);
                 }
 
@@ -156,48 +137,75 @@ namespace MapLoader
                 result.colliders.push_back(AABB::fromPosSize(pos, size));
 
                 MapEntity entity;
-
                 entity.mesh = BuildCubeMesh(pos, size, shouldTile);
-
                 entity.texture = textureCache[textureName];
                 result.entities.push_back(entity);
             }
+            else if (token == "door")
+            {
+                float x, y, z, sx, sy, sz;
+                string req_key, textureName;
+                if (!(ss >> x >> y >> z >> sx >> sy >> sz >> req_key >> textureName))
+                    continue;
 
+                int tileFlag = 1;
+                ss >> tileFlag;
+                bool shouldTile = (tileFlag != 0);
+
+                if (textureCache.find(textureName) == textureCache.end())
+                {
+                    string fullPath = textureBasePath + textureName;
+                    textureCache[textureName] = std::make_shared<Texture>(fullPath);
+                }
+
+                DoorSpawnData door_data;
+                door_data.pos = glm::vec3(x, y, z);
+                door_data.size = glm::vec3(sx, sy, sz);
+                door_data.req_key = req_key;
+                door_data.texture = textureCache[textureName];
+                door_data.should_tile = shouldTile;
+
+                result.doors.push_back(door_data);
+            }
             else if (token == "enemy")
             {
                 float x, y, z;
                 string textureName;
                 if (!(ss >> x >> y >> z >> textureName))
-                {
-                    std::cerr << "MapLoader: bad enemy line: " << line << "\n";
                     continue;
-                }
 
                 if (textureCache.find(textureName) == textureCache.end())
                 {
-                    string folderName = "";
-                    for (char c : textureName)
-                    {
-                        if (std::isalpha(c))
-                        {
-                            folderName += c;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    string fullPath = textureBasePath + folderName + "/" + textureName;
+                    string fullPath = textureBasePath + textureName;
                     textureCache[textureName] = std::make_shared<Texture>(fullPath);
                 }
 
-                // Store the parsed enemy spawn data into our result
                 EnemySpawnData enemy_data;
                 enemy_data.pos = glm::vec3(x, y, z);
                 enemy_data.texture = textureCache[textureName];
 
                 result.enemies.push_back(enemy_data);
+            }
+            else if (token == "pickup")
+            {
+                float x, y, z;
+                string type_str, item_id, textureName;
+                if (!(ss >> x >> y >> z >> type_str >> item_id >> textureName))
+                    continue;
+
+                if (textureCache.find(textureName) == textureCache.end())
+                {
+                    string fullPath = textureBasePath + textureName;
+                    textureCache[textureName] = std::make_shared<Texture>(fullPath);
+                }
+
+                PickupSpawnData pickup_data;
+                pickup_data.pos = glm::vec3(x, y, z);
+                pickup_data.type = (type_str == "WEAPON") ? PickupType::WEAPON : PickupType::KEY;
+                pickup_data.item_id = item_id;
+                pickup_data.texture = textureCache[textureName];
+
+                result.pickups.push_back(pickup_data);
             }
         }
 

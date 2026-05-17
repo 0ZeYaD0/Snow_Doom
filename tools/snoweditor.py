@@ -67,30 +67,36 @@ class SnowEditor(tk.Tk):
 
     def scan_assets(self):
         tex_dir = os.path.join(self.res_dir, "texture")
-        mod_dir = os.path.join(self.res_dir, "models")
         self.available_textures.clear()
         self.available_models.clear()
 
         if os.path.isdir(tex_dir):
             for root, _, files in os.walk(tex_dir):
                 for f in sorted(files):
-                    if f.lower().endswith((".png", ".jpg")):
+                    if f.lower().endswith((".png", ".jpg", ".jpeg")):
+                        # Get relative path from the 'texture' folder root
                         rel = os.path.relpath(os.path.join(root, f), tex_dir)
+                        # Standardize to forward slashes for cross-platform engine consistency
                         self.available_textures.append(rel.replace("\\", "/"))
             self.available_textures.sort()
         else:
             self.available_textures = ["Stone/Stone01.png", "Brick/Brick01.png"]
 
-        if os.path.isdir(mod_dir):
-            for root, _, files in os.walk(mod_dir):
+        # Scan specifically inside the texture/mobs directory for enemy images
+        mobs_dir = os.path.join(tex_dir, "mobs")
+        self.available_models.clear() 
+
+        if os.path.isdir(mobs_dir):
+            for root, _, files in os.walk(mobs_dir):
                 for f in sorted(files):
-                    if f.lower().endswith(".obj"):
-                        self.available_models.append(f)
+                    if f.lower().endswith((".png", ".jpg", ".jpeg")):
+                        rel = os.path.relpath(os.path.join(root, f), tex_dir)
+                        self.available_models.append(rel.replace("\\", "/"))
             self.available_models.sort()
         else:
-            self.available_models = ["snowman.obj"]
+            self.available_models = ["mobs/enemy01.png", "mobs/enemy02.png"]
 
-        print(f"[SnowEditor] {len(self.available_textures)} textures, {len(self.available_models)} models")
+        print(f"[SnowEditor] {len(self.available_textures)} textures, {len(self.available_models)} mob textures")
 
     def change_res_folder(self):
         sel = filedialog.askdirectory(title="Select the Snow Doom 'res' folder",
@@ -177,10 +183,19 @@ class SnowEditor(tk.Tk):
                   bg="#1e3a50", fg="white", relief=tk.FLAT, pady=3
                   ).pack(side=tk.LEFT, fill=tk.X, expand=True)
 
-        tk.Button(right, text="  +  Enemy / Model",
-                  command=self._add_enemy,
+        tk.Button(right, text="  +  Door", command=self._add_door,
+                  bg="#8b5a2b", fg="white", relief=tk.FLAT, pady=3
+                  ).pack(fill=tk.X, pady=(6, 0))
+        
+        tk.Button(right, text="  +  Pickup", command=self._add_pickup,
+                  bg="#2b8b5a", fg="white", relief=tk.FLAT, pady=3
+                  ).pack(fill=tk.X, pady=(2, 0))
+
+        tk.Button(right, text="  +  Enemy / Sprite",
+                  command=lambda: self._add_enemy(),
                   bg="#4a1a1a", fg="white", relief=tk.FLAT, pady=3
                   ).pack(fill=tk.X, pady=(6, 0))
+
 
         ttk.Separator(right, orient="horizontal").pack(fill=tk.X, pady=6)
 
@@ -203,7 +218,7 @@ class SnowEditor(tk.Tk):
 
         self.prop_vars = {}
 
-        # Position rows (no +/- needed for position, just type)
+        # Position rows
         for r, (field, label) in enumerate([("type","Type"),("x","X"),("y","Y"),("z","Z")]):
             tk.Label(pf, text=label, anchor="e", width=7,
                      font=("Arial", 9)).grid(row=r, column=0, sticky="e", padx=(0,4), pady=2)
@@ -240,6 +255,19 @@ class SnowEditor(tk.Tk):
         self.tile_cb = tk.Checkbutton(pf, text="Repeat Texture (Tile) vs Stretch", variable=self.tile_var,
                                       command=self._tile_edit, font=("Arial", 9))
         self.tile_cb.grid(row=9, column=0, columnspan=4, sticky="w", padx=4, pady=(5,0))
+
+        # Logic fields
+        tk.Label(pf, text="Logic", font=("Arial", 9, "bold"), fg="#888"
+                 ).grid(row=10, column=0, columnspan=4, sticky="w", padx=4, pady=(8,2))
+
+        for r, (field, label) in enumerate([("req_key", "Req Key"), ("pickup_type", "P. Type"), ("item_id", "Item ID")], start=11):
+            tk.Label(pf, text=label, anchor="e", width=7,
+                     font=("Arial", 9)).grid(row=r, column=0, sticky="e", padx=(0,4), pady=2)
+            var = tk.StringVar()
+            self.prop_vars[field] = var
+            e = tk.Entry(pf, textvariable=var, font=("Courier", 9))
+            e.grid(row=r, column=1, columnspan=3, sticky="ew", pady=2)
+            e.bind("<KeyRelease>", self._prop_edit)
 
         # Y quick levels
         yf = tk.Frame(right); yf.pack(fill=tk.X, pady=(6, 2))
@@ -306,7 +334,7 @@ class SnowEditor(tk.Tk):
         outline = "#ffffff" if selected else "#000000"
         lw      = 3        if selected else 1
 
-        if ent["type"] == "block":
+        if ent["type"] in ("block", "door"):
             color = self._block_color(ent)
             hx = float(ent.get("sx", 1)) / 2.0
             hz = float(ent.get("sz", 1)) / 2.0
@@ -314,7 +342,6 @@ class SnowEditor(tk.Tk):
             x1, z1 = self._w2s(ex - hx, ez - hz)
             x2, z2 = self._w2s(ex + hx, ez + hz)
             
-            # If stretching, make the block outline dashed to distinguish visually in editor
             if ent.get("tile", 1) == 0:
                 self.canvas.create_rectangle(x1, z1, x2, z2,
                                              fill=color, outline=outline, width=lw, dash=(4,4))
@@ -322,21 +349,18 @@ class SnowEditor(tk.Tk):
                 self.canvas.create_rectangle(x1, z1, x2, z2,
                                              fill=color, outline=outline, width=lw)
 
-            # Texture label
             if self.zoom >= 7:
                 lx, lz = self._w2s(ex, ez)
                 self.canvas.create_text(lx, lz,
                     text=os.path.basename(ent.get("texture/enemy", "")),
                     fill="#dddddd", font=("Arial", max(7, int(self.zoom * 0.65))))
 
-            # Y badge so you can see height layers
             bx, bz = self._w2s(ex - hx + 0.15, ez - hz + 0.15)
             self.canvas.create_text(bx, bz, anchor="nw",
                 text=f"y={ent.get('y', 0)}",
                 fill="#cccccc" if selected else "#555555",
                 font=("Courier", 7))
 
-            # Corner resize handles when selected
             if selected:
                 for chx, chz in [(ex-hx, ez-hz), (ex+hx, ez-hz),
                                   (ex-hx, ez+hz), (ex+hx, ez+hz)]:
@@ -346,18 +370,23 @@ class SnowEditor(tk.Tk):
                         px + HANDLE_PX, pz + HANDLE_PX,
                         fill="#ffffff", outline="#000000", width=1)
 
-        elif ent["type"] == "enemy":
+        elif ent["type"] in ("enemy", "pickup"):
             r = max(5, int(self.zoom * 0.65))
             ex, ez = float(ent["x"]), float(ent["z"])
             px, pz = self._w2s(ex, ez)
+            
+            fill_c = "#cc0000" if ent["type"] == "enemy" else "#00cc44"
+            txt_c  = "#ff6666" if ent["type"] == "enemy" else "#66ff66"
+            
             self.canvas.create_oval(px-r, pz-r, px+r, pz+r,
-                                    fill="#cc0000", outline=outline, width=lw)
+                                    fill=fill_c, outline=outline, width=lw)
             if self.zoom >= 7:
                 self.canvas.create_text(px, pz + r + 9,
                     text=os.path.basename(ent.get("texture/enemy", "")),
-                    fill="#ff6666", font=("Arial", max(7, int(self.zoom * 0.6))))
+                    fill=txt_c, font=("Arial", max(7, int(self.zoom * 0.6))))
 
     def _block_color(self, ent):
+        if ent["type"] == "door": return "#b8880f"
         t = ent.get("texture/enemy", "").lower()
         if "brick"   in t: return "#7a2020"
         if "wood"    in t: return "#6b3510"
@@ -404,11 +433,9 @@ class SnowEditor(tk.Tk):
             px -= self.cam_x
             pz -= self.cam_z
             
-            # Rotate Y (Yaw)
             rx = px * cos_y - pz * sin_y
             rz = px * sin_y + pz * cos_y
             
-            # Rotate X (Pitch)
             ry = py * cos_x - rz * sin_x
             
             return cx + rx * scale, cy - ry * scale
@@ -416,7 +443,7 @@ class SnowEditor(tk.Tk):
         for i, ent in enumerate(self.entities):
             color = "yellow" if i == self.selected_index else "white"
             
-            if ent["type"] == "block":
+            if ent["type"] in ("block", "door"):
                 x, y, z = ent["x"], ent["y"], ent["z"]
                 sx, sy, sz = ent["sx"] / 2, ent["sy"] / 2, ent["sz"] / 2
                 
@@ -431,9 +458,10 @@ class SnowEditor(tk.Tk):
                 for p1, p2 in edges:
                     self.preview_canvas.create_line(proj[p1][0], proj[p1][1], proj[p2][0], proj[p2][1], fill=color)
                     
-            elif ent["type"] == "enemy":
+            elif ent["type"] in ("enemy", "pickup"):
                 px, py = project(ent["x"], ent["y"], ent["z"])
-                self.preview_canvas.create_oval(px-3, py-3, px+3, py+3, outline="red", fill="red")
+                fc = "red" if ent["type"] == "enemy" else "green"
+                self.preview_canvas.create_oval(px-3, py-3, px+3, py+3, outline=fc, fill=fc)
 
     # ------------------------------------------------------------------ #
     #  ENTITY OPERATIONS                                                   #
@@ -451,14 +479,42 @@ class SnowEditor(tk.Tk):
         self.selected_index = len(self.entities) - 1
         self.populate_properties()
         self.draw_canvas()
+        
+    def _add_door(self):
+        tex = self.available_textures[0] if self.available_textures else "Wood/Wood01.png"
+        self.entities.append({
+            "type": "door",
+            "x": float(round(self.cam_x)), "y": 0.0, "z": float(round(self.cam_z)),
+            "sx": 1.0, "sy": 4.0, "sz": 1.0,
+            "req_key": "none",
+            "texture/enemy": tex,
+            "tile": 1
+        })
+        self.selected_index = len(self.entities) - 1
+        self.populate_properties()
+        self.draw_canvas()
+
+    def _add_pickup(self):
+        tex = self.available_textures[0] if self.available_textures else "Item/Key.png"
+        self.entities.append({
+            "type": "pickup",
+            "x": float(round(self.cam_x)), "y": 0.0, "z": float(round(self.cam_z)),
+            "sx": "-", "sy": "-", "sz": "-",
+            "pickup_type": "KEY",
+            "item_id": "red_key",
+            "texture/enemy": tex
+        })
+        self.selected_index = len(self.entities) - 1
+        self.populate_properties()
+        self.draw_canvas()
 
     def _add_enemy(self):
-        mdl = self.available_models[0] if self.available_models else "snowman.obj"
+        default_mob = self.available_models[0] if self.available_models else "mobs/enemy01.png"
         self.entities.append({
             "type": "enemy",
             "x": float(round(self.cam_x)), "y": 0.0, "z": float(round(self.cam_z)),
             "sx": "-", "sy": "-", "sz": "-",
-            "texture/enemy": mdl
+            "texture/enemy": default_mob
         })
         self.selected_index = len(self.entities) - 1
         self.populate_properties()
@@ -475,7 +531,6 @@ class SnowEditor(tk.Tk):
         if self.selected_index >= 0:
             new_ent = copy.deepcopy(self.entities[self.selected_index])
             
-            # Shift slightly so it doesn't perfectly hide inside the original
             new_ent["x"] += 1.0 
             new_ent["z"] += 1.0
             
@@ -502,14 +557,18 @@ class SnowEditor(tk.Tk):
         for field, var in self.prop_vars.items():
             var.set(str(ent.get(field, "")))
 
-        if ent["type"] == "block":
+        if ent["type"] in ("block", "door"):
             self.asset_combo["values"] = self.available_textures
             self.asset_label_var.set("Texture")
             self.tile_cb.config(state="normal")
             self.tile_var.set(ent.get("tile", 1))
         else:
-            self.asset_combo["values"] = self.available_models
-            self.asset_label_var.set("Model")
+            if ent["type"] == "enemy":
+                self.asset_combo["values"] = self.available_models
+                self.asset_label_var.set("Texture")
+            else:
+                self.asset_combo["values"] = self.available_textures
+                self.asset_label_var.set("Texture")
             self.tile_cb.config(state="disabled")
             self.tile_var.set(0)
             
@@ -566,12 +625,12 @@ class SnowEditor(tk.Tk):
         self.listbox.delete(0, tk.END)
         for i, ent in enumerate(self.entities):
             base = os.path.splitext(os.path.basename(ent["texture/enemy"]))[0]
-            if ent["type"] == "block":
+            if ent["type"] in ("block", "door"):
                 parts = ent["texture/enemy"].replace("\\", "/").split("/")
                 cat   = parts[0] if len(parts) > 1 else ""
-                label = f"[{i}] Block  y={ent.get('y',0)}  [{cat}] {base}"
+                label = f"[{i}] {ent['type'].capitalize()}  y={ent.get('y',0)}  [{cat}] {base}"
             else:
-                label = f"[{i}] Enemy  {base}"
+                label = f"[{i}] {ent['type'].capitalize()}  {base}"
             self.listbox.insert(tk.END, label)
             if i == self.selected_index:
                 self.listbox.selection_set(i)
@@ -591,7 +650,7 @@ class SnowEditor(tk.Tk):
         if not (0 <= self.selected_index < len(self.entities)):
             return None
         ent = self.entities[self.selected_index]
-        if ent["type"] != "block":
+        if ent["type"] not in ("block", "door"):
             return None
         ex = float(ent["x"]); ez = float(ent["z"])
         hx = float(ent["sx"]) / 2; hz = float(ent["sz"]) / 2
@@ -621,13 +680,13 @@ class SnowEditor(tk.Tk):
         hit = -1
         for i in range(len(self.entities) - 1, -1, -1):
             ent = self.entities[i]
-            if ent["type"] == "block":
+            if ent["type"] in ("block", "door"):
                 hx = float(ent["sx"]) / 2
                 hz = float(ent["sz"]) / 2
                 if (float(ent["x"]) - hx <= wx <= float(ent["x"]) + hx and
                         float(ent["z"]) - hz <= wz <= float(ent["z"]) + hz):
                     hit = i; break
-            elif ent["type"] == "enemy":
+            elif ent["type"] in ("enemy", "pickup"):
                 if math.hypot(float(ent["x"]) - wx, float(ent["z"]) - wz) < 1.0:
                     hit = i; break
 
@@ -635,7 +694,6 @@ class SnowEditor(tk.Tk):
             self.selected_index = hit
             self.drag["mode"]   = "move"
             
-            # FIXED: Capture the exact offset between mouse and object origin
             ent = self.entities[hit]
             self.drag["offset_x"] = float(ent["x"]) - wx
             self.drag["offset_z"] = float(ent["z"]) - wz
@@ -653,11 +711,9 @@ class SnowEditor(tk.Tk):
         wx, wz = self._s2w(event.x, event.y)
 
         if self.drag["mode"] == "move" and self.selected_index >= 0:
-            # FIXED: Apply the offset so it grabs exactly where you clicked
             new_x = wx + self.drag.get("offset_x", 0)
             new_z = wz + self.drag.get("offset_z", 0)
             
-            # Still rounding to 0.5 to keep things nice and aligned to your map grid
             self.entities[self.selected_index]["x"] = round(new_x * 2) / 2
             self.entities[self.selected_index]["z"] = round(new_z * 2) / 2
             
@@ -718,18 +774,31 @@ class SnowEditor(tk.Tk):
             initialdir=maps_dir)
         if not fp: return
 
+        # Using tabs '\t' to separate tokens safely when texture paths have folders/spaces
         with open(fp, "w") as f:
             f.write("# SNOW DOOM MAP\n")
-            f.write("# block x y z sx sy sz texture [1=tile, 0=stretch]\n")
-            f.write("# enemy x y z model\n\n")
+            f.write("# block\tx\ty\tz\tsx\tsy\tsz\ttexture\t[1=tile, 0=stretch]\n")
+            f.write("# enemy\tx\ty\tz\ttexture\n")
+            f.write("# door\tx\ty\tz\tsx\tsy\tsz\treq_key\ttexture\t[1=tile, 0=stretch]\n")
+            f.write("# pickup\tx\ty\tz\ttype\titem_id\ttexture\n\n")
             for ent in self.entities:
-                name = os.path.basename(ent["texture/enemy"])
+                name = ent["texture/enemy"] 
+                
                 if ent["type"] == "block":
                     tile_flag = ent.get('tile', 1)
-                    f.write(f"block    {ent['x']}    {ent['y']}    {ent['z']}    "
-                            f"{ent['sx']}    {ent['sy']}    {ent['sz']}    {name}    {tile_flag}\n")
+                    f.write(f"block\t{ent['x']}\t{ent['y']}\t{ent['z']}\t"
+                            f"{ent['sx']}\t{ent['sy']}\t{ent['sz']}\t{name}\t{tile_flag}\n")
+                elif ent["type"] == "door":
+                    req = ent.get('req_key', 'none')
+                    tile_flag = ent.get('tile', 1)
+                    f.write(f"door\t{ent['x']}\t{ent['y']}\t{ent['z']}\t"
+                            f"{ent['sx']}\t{ent['sy']}\t{ent['sz']}\t{req}\t{name}\t{tile_flag}\n")
                 elif ent["type"] == "enemy":
-                    f.write(f"enemy    {ent['x']}    {ent['y']}    {ent['z']}    {name}\n")
+                    f.write(f"enemy\t{ent['x']}\t{ent['y']}\t{ent['z']}\t{name}\n")
+                elif ent["type"] == "pickup":
+                    ptype = ent.get('pickup_type', 'KEY')
+                    iid = ent.get('item_id', 'none')
+                    f.write(f"pickup\t{ent['x']}\t{ent['y']}\t{ent['z']}\t{ptype}\t{iid}\t{name}\n")
 
         self._status(f"Saved: {os.path.basename(fp)}")
         messagebox.showinfo("Saved", "Map saved!")
@@ -744,24 +813,40 @@ class SnowEditor(tk.Tk):
         self.entities.clear()
         with open(fp, "r") as f:
             for line in f:
-                p = line.strip().split()
-                if not p or line.startswith("#"): continue
+                if not line.strip() or line.startswith("#"): continue
+                
+                # Split specifically by Tab character so folder trees and paths with spaces stay whole
+                p = line.strip().split('\t')
+                
                 if p[0] == "block" and len(p) >= 8:
                     tile_val = int(p[8]) if len(p) >= 9 else 1
-                    
                     self.entities.append({
                         "type": "block",
                         "x": float(p[1]), "y": float(p[2]), "z": float(p[3]),
                         "sx": float(p[4]), "sy": float(p[5]), "sz": float(p[6]),
-                        "texture/enemy": p[7],
+                        "texture/enemy": p[7], "tile": tile_val
+                    })
+                elif p[0] == "door" and len(p) >= 9:
+                    tile_val = int(p[9]) if len(p) >= 10 else 1
+                    self.entities.append({
+                        "type": "door",
+                        "x": float(p[1]), "y": float(p[2]), "z": float(p[3]),
+                        "sx": float(p[4]), "sy": float(p[5]), "sz": float(p[6]),
+                        "req_key": p[7], "texture/enemy": p[8],
                         "tile": tile_val
                     })
                 elif p[0] == "enemy" and len(p) >= 5:
                     self.entities.append({
                         "type": "enemy",
                         "x": float(p[1]), "y": float(p[2]), "z": float(p[3]),
+                        "sx": "-", "sy": "-", "sz": "-", "texture/enemy": p[4]
+                    })
+                elif p[0] == "pickup" and len(p) >= 7:
+                    self.entities.append({
+                        "type": "pickup",
+                        "x": float(p[1]), "y": float(p[2]), "z": float(p[3]),
                         "sx": "-", "sy": "-", "sz": "-",
-                        "texture/enemy": p[4]
+                        "pickup_type": p[4], "item_id": p[5], "texture/enemy": p[6]
                     })
 
         self.selected_index = -1

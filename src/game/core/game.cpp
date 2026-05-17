@@ -56,7 +56,7 @@ Game::Game()
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
     // --- obj test
-    current_map = MapLoader::Load("res/maps/level_2.map");
+    current_map = MapLoader::Load("res/maps/test1.map");
 
     for (size_t i = 0; i < current_map.colliders.size(); i++)
     {
@@ -79,36 +79,33 @@ Game::Game()
         entities.push_back(new_enemy);
     }
 
-    // --- INTERACTION SYSTEM TEST SETUP ---
-    Texture *key_tex = new Texture("res/art/key.png");
-    Pickup *test_key = new Pickup(
-        glm::vec3(5.0f, 1.0f, 5.0f),
-        player,
-        sprite_quad,
-        key_tex,
-        PickupType::KEY,
-        "red_key");
-    entities.push_back(test_key);
+    // --- DYNAMIC INTERACTION SYSTEM SETUP FROM MAP ---
+    for (const auto &pickup_data : current_map.pickups)
+    {
+        Pickup *new_pickup = new Pickup(
+            pickup_data.pos,
+            player,
+            sprite_quad,
+            pickup_data.texture.get(),
+            pickup_data.type,
+            pickup_data.item_id);
+        entities.push_back(new_pickup);
+    }
 
-    Texture *banana_tex = new Texture("res/art/fruit_banana.png");
-    Pickup *test_weapon = new Pickup(
-        glm::vec3(-5.0f, 1.0f, 5.0f),
-        player,
-        sprite_quad,
-        banana_tex,
-        PickupType::WEAPON,
-        "banana_gun");
-    entities.push_back(test_weapon);
+    // 2. Load Doors from Map File
+    for (const auto &door_data : current_map.doors)
+    {
+        Mesh *door_mesh = new Mesh(MapLoader::BuildCubeMesh(glm::vec3(0.0f), door_data.size, door_data.should_tile));
 
-    Texture *door_tex = new Texture("res/texture/Doors/Doors01.png");
-    Door *test_door = new Door(
-        glm::vec3(0.0f, 1.5f, 7.0f),
-        glm::vec3(2.0f, 3.0f, 0.5f),
-        player,
-        sprite_quad,
-        door_tex,
-        "red_key");
-    entities.push_back(test_door);
+        Door *new_door = new Door(
+            door_data.pos,
+            door_data.size,
+            player,
+            door_mesh,
+            door_data.texture.get(),
+            door_data.req_key);
+        entities.push_back(new_door);
+    }
 }
 
 void Game::ProcessInput()
