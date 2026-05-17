@@ -23,26 +23,21 @@ struct RaycastHit
 class Physics
 {
 public:
-    // Checks for a collision and automatically modifies the dynamic object's position to push it out of the static obstacle.
-    // Returns true if a collision was resolved.
     static bool resolveCollision(
         glm::vec3 &dynamicPos,
         const glm::vec3 &dynamicSize,
-        const AABB &staticObstacle
-    );
+        const AABB &staticObstacle);
 
     static bool RayIntersectAABB(
         glm::vec3 ray_origin,
         glm::vec3 ray_dir,
         const AABB &aabb,
         f32 &out_dist,
-        glm::vec3 &out_normal
-    );
+        glm::vec3 &out_normal);
 
     static RaycastHit Raycast(
         glm::vec3 ray_origin,
         glm::vec3 ray_dir,
         const vector<Entity *> &entities,
-        f32 max_dist
-    );
+        f32 max_dist);
 };

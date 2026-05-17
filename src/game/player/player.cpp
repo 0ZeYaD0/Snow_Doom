@@ -290,7 +290,6 @@ void Player::PlayShootSound()
 void Player::GiveKey(const string &key_id)
 {
     inventory_keys.push_back(key_id);
-    std::cout << "u have me bby" << key_id << "\n";
 }
 
 bool Player::HasKey(const string &key_id)
@@ -314,7 +313,6 @@ void Player::EquipWeapon(const string &weapon_id)
     if (weapon_id == "banana_gun")
     {
         current_weapon = new Banana();
-        std::cout << "I am a banana \n";
     }
 
     else
