@@ -11,9 +11,10 @@ conf: debug {
 }
 
 conf: release {
-    flags: [ -O3 ]
+    flags: [ -O3, -static, -static-libgcc, -static-libstdc++ ]
     defines: [ NDEBUG ]
 }
+
 
 project: snow_doom {
     kind: exe
