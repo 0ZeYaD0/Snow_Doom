@@ -16,11 +16,13 @@ private:
     glm::vec3 size;
     glm::vec3 initial_pos;
 
-    f32 closed_yaw = 0.0f;
-    f32 open_yaw = 90.0f;
+    f32 closed_y = 0.0f;
+    f32 open_y = 0.0f;
 
     bool is_open = false;
     f32 swing_speed = 5.0f;
+
+    f32 DOOR_OPEN_DIST = 5.0f;
 
 public:
     Door(glm::vec3 spawn_pos, glm::vec3 door_size, Player *player, Mesh *mesh, Texture *tex, std::string req_key);

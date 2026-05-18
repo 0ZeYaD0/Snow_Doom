@@ -10,6 +10,7 @@ class PlayerHUD
 private:
     Texture *speed_lines_tex;
     Texture* crosshair_ring_tex;
+    Texture *death_tex;
 
     void DrawDashCounter(UIManager& ui, const Window& window, const Player* player);
     void DrawWeapon(UIManager& ui, const Window& window, const Player* player);
@@ -17,6 +18,7 @@ private:
     void DrawCrosshair(UIManager& ui, const Window& window, const Player* player, f32 delta_time);
     void DrawHealthBar(UIManager& ui, const Window& window, const Player* player);
     void DrawAmmo(UIManager& ui, const Window& window, const Player* player);
+    void DrawDeathScreen(UIManager& ui, const Window& window);
 
 public:
     PlayerHUD();

@@ -16,13 +16,20 @@ PlayerHUD::~PlayerHUD()
 
 void PlayerHUD::Init()
 {
-    speed_lines_tex = new Texture("res/art/anime_lines.png"); 
+    speed_lines_tex = new Texture("res/art/anime_lines.png");
     crosshair_ring_tex = new Texture("res/art/crosshair.png");
+    death_tex = new Texture("res/art/you_died.png");
 }
 
 void PlayerHUD::Render(UIManager& ui, const Window& window, const Player* player, f32 delta_time)
 {
     if (!player) return;
+
+    if (player->IsDead())
+    {
+        DrawDeathScreen(ui, window);
+        return;
+    }
 
     DrawSpeedLines(ui, window, player);
     DrawDashCounter(ui, window, player);
@@ -216,4 +223,14 @@ void PlayerHUD::DrawAmmo(UIManager& ui, const Window& window, const Player* play
         
         ui.DrawRect(start_pos - glm::vec2(0.0f, i * (bullet_size.y + 5.0f)), bullet_size, col, glm::vec4(0.0f), 1.0f);
     }
+}
+
+void PlayerHUD::DrawDeathScreen(UIManager& ui, const Window& window)
+{
+    if (!death_tex) return;
+
+    glm::vec2 size(window.GetWidth(), window.GetWidth() / 4.0f);
+    glm::vec2 pos((window.GetWidth() - size.x) / 2.0f, (window.GetHeight() - size.y) / 2.0f);
+    
+    ui.DrawSprite(death_tex, pos, size, 0.0f, glm::vec4(1.0f));
 }

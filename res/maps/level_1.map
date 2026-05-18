@@ -1,0 +1,94 @@
+# SNOW DOOM MAP
+# block	x	y	z	sx	sy	sz	texture	[1=tile, 0=stretch]
+# enemy	x	y	z	texture
+# door	x	y	z	sx	sy	sz	req_key	texture	[1=tile, 0=stretch]
+# pickup	x	y	z	type	item_id	texture
+
+block	0.0	0.0	0.0	40.0	0.1	40.0	env/snow.png	1
+block	0.0	4.0	-19.5	40.0	8.0	1.0	Brick/Brick01.png	1
+block	0.0	4.0	19.5	40.0	8.0	1.0	Brick/Brick01.png	1
+block	98.0	4.0	0.5	1.0	8.0	40.0	Brick/Brick01.png	1
+block	19.5	4.0	12.0	1.0	8.0	16.0	Brick/Brick01.png	1
+block	58.5	4.0	91.0	1.0	8.0	16.0	Brick/Brick01.png	1
+pickup	-15.0	1.0	-14.5	KEY	key_01	env/key.png
+block	39.5	0.0	0.0	40.0	0.1	8.0	env/snow.png	1
+block	39.0	4.0	-4.5	40.0	8.0	1.0	Brick/Brick01.png	1
+block	39.0	4.0	4.5	40.0	8.0	1.0	Brick/Brick01.png	1
+block	78.5	0.0	0.5	40.0	0.1	40.0	env/snow.png	1
+block	78.5	4.0	-19.5	40.0	8.0	1.0	Brick/Brick01.png	1
+block	-19.5	4.0	0.0	1.0	8.0	40.0	Brick/Brick01.png	1
+block	58.5	4.0	-12.0	1.0	8.0	16.0	Brick/Brick01.png	1
+block	58.5	4.0	12.0	1.0	8.0	16.0	Brick/Brick01.png	1
+block	66.0	4.0	20.5	16.0	8.0	1.0	Brick/Brick01.png	1
+block	90.0	4.0	20.5	16.0	8.0	1.0	Brick/Brick01.png	1
+block	78.0	0.0	40.5	8.0	0.1	40.0	env/snow.png	1
+block	73.5	4.0	40.0	1.0	8.0	40.0	Brick/Brick01.png	1
+block	82.5	4.0	40.0	1.0	8.0	40.0	Brick/Brick01.png	1
+block	78.0	0.0	79.5	40.0	0.1	40.0	env/snow.png	1
+block	98.0	4.0	79.0	1.0	8.0	40.0	Brick/Brick01.png	1
+block	78.0	4.0	99.0	40.0	8.0	1.0	Brick/Brick01.png	1
+block	66.0	4.0	59.5	16.0	8.0	1.0	Brick/Brick01.png	1
+block	90.5	4.0	59.5	16.0	8.0	1.0	Brick/Brick01.png	1
+block	58.5	4.0	67.0	1.0	8.0	16.0	Brick/Brick01.png	1
+block	19.5	4.0	-12.0	1.0	8.0	16.0	Brick/Brick01.png	1
+pickup	88.0	1.0	2.0	KEY	key_02	Brick/Brick01.png
+block	31.5	0.0	79.0	54.0	0.1	19.0	env/snow.png	1
+block	31.5	4.0	69.5	54.0	8.0	1.0	Brick/Brick01.png	1
+block	31.5	4.0	88.5	54.0	8.0	1.0	Brick/Brick01.png	1
+block	-2.5	0.0	79.0	14.0	2.0	19.0	env/snow.png	1
+block	-16.5	0.0	79.0	14.0	4.0	19.0	env/snow.png	1
+block	-30.5	0.0	79.0	14.0	6.0	19.0	env/snow.png	1
+block	-44.5	0.0	79.0	14.0	8.0	19.0	env/snow.png	1
+block	-63.0	0.0	79.0	23.0	8.0	27.0	env/snow.png	1
+block	-23.0	4.0	69.5	58.0	50.0	1.0	Brick/Brick01.png	1
+block	-22.5	4.0	88.5	59.0	50.0	1.0	Brick/Brick01.png	1
+block	-63.0	4.0	65.0	23.0	50.0	1.0	Brick/Brick01.png	1
+block	-63.0	4.0	92.5	23.0	50.0	1.0	Brick/Brick01.png	1
+block	-52.0	4.0	67.5	1.0	50.0	5.0	Brick/Brick01.png	1
+block	-52.0	4.0	90.5	1.0	50.0	5.0	Brick/Brick01.png	1
+block	-74.0	4.0	79.0	1.0	50.0	28.0	Brick/Brick01.png	1
+door	19.5	4.0	0.0	1.0	8.0	9.0	key_01	Doors/Doors01.png	0
+door	58.5	4.0	0.0	1.0	8.0	9.0	none	Doors/Doors01.png	0
+door	78.0	4.0	20.5	9.0	8.0	1.0	none	Doors/Doors01.png	0
+door	78.0	4.0	59.5	9.0	8.0	1.0	none	Doors/Doors01.png	0
+door	58.5	4.0	79.0	1.0	8.0	9.0	key_02	Doors/Doors01.png	0
+block	-2.5	1.0	-12.0	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	-15.0	1.0	14.0	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	-11.5	1.0	16.5	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	-10.5	1.0	13.0	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	32.0	1.0	-2.5	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	51.0	1.0	2.0	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	65.0	0.5	17.0	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	92.5	1.0	-13.0	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	65.5	1.0	-15.5	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	69.5	1.0	-15.5	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	65.0	1.0	-12.5	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	80.5	1.0	26.0	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	93.0	1.0	66.0	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	94.5	1.0	70.0	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	88.0	1.0	63.5	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	91.0	1.0	87.5	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	91.0	1.0	89.5	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	91.0	1.0	91.5	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	91.0	1.0	93.5	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	91.0	1.0	95.5	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	91.0	1.0	97.5	2.0	2.0	2.0	env/RTS_Crate.png	1
+block	91.0	1.0	85.5	2.0	2.0	2.0	env/RTS_Crate.png	1
+enemy	35.5	1.0	-2.5	mobs/env_santa.png
+enemy	48.0	1.0	2.0	mobs/env_santa.png
+enemy	68.0	1.0	-13.0	mobs/env_santa.png
+enemy	61.0	1.0	-16.0	mobs/env_santa.png
+enemy	67.0	1.0	7.0	mobs/env_santa.png
+enemy	93.0	1.0	-9.5	mobs/env_santa.png
+enemy	80.0	1.0	29.0	mobs/env_santa.png
+enemy	78.5	1.0	54.5	mobs/env_santa.png
+enemy	93.0	1.0	63.0	mobs/env_santa.png
+enemy	95.5	1.0	67.0	mobs/env_santa.png
+enemy	95.5	1.0	85.5	mobs/env_santa.png
+enemy	69.0	1.0	77.5	mobs/env_santa.png
+enemy	77.5	1.0	90.0	mobs/env_santa.png
+enemy	39.5	1.0	76.5	mobs/env_santa.png
+enemy	15.0	1.0	82.5	mobs/env_santa.png
+pickup	-63.0	5.5	79.5	KEY	end_key	env/red_key.png
+enemy	-7.0	2.0	75.0	mobs/env_santa.png
+enemy	-21.5	3.0	83.5	mobs/env_santa.png

@@ -14,13 +14,15 @@
 LevelScene::LevelScene(const string &map_file, Window *game_window, UIManager *ui)
     : map_filepath(map_file), window(game_window), ui_manager(ui), player(nullptr), main_shader(nullptr)
 {
+    
 }
 
 void LevelScene::Init(SceneManager *manager)
 {
-    Input::ToggleCursor(window->GetWindow());
+    Input::SetCursorHidden(window->GetWindow(), true);
 
     scene_manager = manager;
+    you_died_file = "res/audio/you_died.ogg";
 
     // shaders
     main_shader = new Shader("res/shaders/vertex.glsl", "res/shaders/fragment.glsl");
@@ -30,8 +32,6 @@ void LevelScene::Init(SceneManager *manager)
 
     // player
     player = new Player(glm::vec3(0.0f, 4.0f, 0.0f));
-    AudioBuffer *snd_player_shoot = new AudioBuffer("res/audio/shoot.ogg");
-    player->sfx_shoot = snd_player_shoot;
 
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -92,6 +92,14 @@ void LevelScene::Init(SceneManager *manager)
             door_data.req_key);
         entities.push_back(new_door);
     }
+
+    bg_music = new AudioBuffer(soundtrack_file); 
+    you_died_music = new AudioBuffer(you_died_file);
+    
+    bg_audio_source.SetSpatial(false);
+    bg_audio_source.SetLooping(true);
+    bg_audio_source.SetVolume(0.3f);
+    bg_audio_source.Play(bg_music);
 }
 
 void LevelScene::ProcessInput()
@@ -101,6 +109,26 @@ void LevelScene::ProcessInput()
 
 void LevelScene::Update(f32 dt)
 {
+    if (player && player->IsDead())
+    {
+        if(!played_death_sound)
+        {
+            bg_audio_source.Stop();
+
+            bg_audio_source.SetSpatial(false);
+            bg_audio_source.SetLooping(false);
+            bg_audio_source.SetVolume(1.0f);
+            bg_audio_source.Play(you_died_music);
+            
+            played_death_sound = true;
+        }
+
+        if (Input::GetActionDown("Jump") || Input::GetActionDown("Fire"))
+            Reset();
+        
+        return; 
+    }
+
     // This loop now automatically updates projectiles spawned by the player or enemies
     for (auto &entity : entities)
     {
@@ -132,8 +160,15 @@ void LevelScene::Update(f32 dt)
         }
     }
 
-    // Player gets the reference to entities here, allowing the Weapon class to spawn and push new Projectiles directly into the list
     player->UpdatePlayer(dt, current_frame_colliders, entities);
+    if (!is_completed && check_completion && check_completion())
+    {
+        is_completed = true;
+        if (on_level_complete)
+        {
+            on_level_complete();
+        }
+    }
 }
 
 void LevelScene::Render(f32 dt)
@@ -178,4 +213,34 @@ void LevelScene::Cleanup()
     for (auto e : entities)
         delete e;
     entities.clear();
+    
+    level_colliders.clear();
+    current_frame_colliders.clear();
+    
+    if (bg_music) {
+        delete bg_music;
+        bg_music = nullptr;
+    }
+    
+    if (you_died_music) {
+        delete you_died_music;
+        you_died_music = nullptr; 
+    }
+}
+
+void LevelScene::Reset()
+{
+    bg_audio_source.Stop(); 
+    Cleanup();
+    
+    is_completed = false;
+    played_death_sound = false;
+    
+    Init(scene_manager);
+}
+
+void LevelScene::SetCompletionLogic(std::function<bool()> condition, std::function<void()> callback)
+{
+    check_completion = condition;
+    on_level_complete = callback;
 }

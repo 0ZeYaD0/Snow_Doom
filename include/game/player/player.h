@@ -68,6 +68,8 @@ public:
     glm::vec3 velocity{0.0f};
     bool is_grounded = false;
     glm::vec3 player_size{1.0f, 2.0f, 1.0f};
+    bool is_dead = false;
+    bool IsDead() const { return is_dead; }
 
     // COMPONENTS
     Hurtable health;
@@ -76,6 +78,7 @@ public:
 
     // --- AUDIO ---
     AudioBuffer *sfx_shoot = nullptr;
+    AudioBuffer *sfx_footstep = nullptr;
     void PlayShootSound();
 
     // METHODS

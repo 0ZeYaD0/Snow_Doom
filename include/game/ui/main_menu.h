@@ -37,4 +37,7 @@ private:
     Shader* bg_shader;
     LoadMap bg_map;
     f32 camera_angle;
+
+    AudioSource audio_source;
+    AudioBuffer* soundtrack = nullptr;
 };

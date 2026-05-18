@@ -6,8 +6,8 @@ Door::Door(glm::vec3 spawn_pos, glm::vec3 door_size, Player *player, Mesh *mesh,
     transform.position = spawn_pos;
     initial_pos = spawn_pos;
 
-    closed_yaw = transform.rotation.y;
-    open_yaw = closed_yaw - 90.0f;
+    closed_y = transform.position.y;
+    open_y = closed_y - size.y;
 }
 
 void Door::Update(f32 delta_time)
@@ -15,17 +15,10 @@ void Door::Update(f32 delta_time)
     glm::vec3 dir_to_player = target_player->transform.position - initial_pos;
     f32 dist = glm::length(dir_to_player);
 
-    if (dist < 3.0f && (required_key == "none" || target_player->HasKey(required_key)))
-    {
-        is_open = true;
-    }
-    else
-    {
-        is_open = false;
-    }
+    is_open = (dist < DOOR_OPEN_DIST && (required_key == "none" || target_player->HasKey(required_key)));
 
-    f32 target_yaw = is_open ? open_yaw : closed_yaw;
-    transform.rotation.y = glm::mix(transform.rotation.y, target_yaw, swing_speed * delta_time);
+    f32 target_y = is_open ? open_y : closed_y;
+    transform.position.y = glm::mix(transform.position.y, target_y, swing_speed * delta_time);
 }
 
 AABB Door::GetCollider() const

@@ -5,6 +5,13 @@ Pickup::Pickup(glm::vec3 spawn_pos, Player *player, Mesh *mesh, Texture *tex, Pi
 {
     transform.position = spawn_pos;
     transform.scale = glm::vec3(0.5f);
+
+    initial_y = spawn_pos.y;
+
+    if (type == PickupType::KEY) {
+        pickup_sound = new AudioBuffer("res/audio/pickup.ogg");
+        audio_source.SetPosition(spawn_pos);
+    }
 }
 
 void Pickup::Update(f32 delta_time)
@@ -12,20 +19,21 @@ void Pickup::Update(f32 delta_time)
     if (pending_destroy)
         return;
 
-    // Hover & Spin animation
     float_offset += delta_time * 2.0f;
-    transform.position.y += sin(float_offset) * 0.005f;
+    transform.position.y = initial_y + sin(float_offset) * 0.2f;
     transform.rotation.y += 45.0f * delta_time;
 
-    // Proximity Check
     glm::vec3 dir_to_player = target_player->transform.position - transform.position;
     f32 dist = glm::length(dir_to_player);
 
-    if (dist < 1.5f && Input::GetActionDown("Interact"))
+    if (dist < 1.5f)
     {
         if (type == PickupType::KEY)
         {
             target_player->GiveKey(item_id);
+            if (pickup_sound) {
+                audio_source.Play(pickup_sound);
+            }
         }
         else if (type == PickupType::WEAPON)
         {

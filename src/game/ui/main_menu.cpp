@@ -11,6 +11,12 @@ MainMenuScene::MainMenuScene(Window *game_window, UIManager *ui)
     title_tex = new Texture("res/art/snow_doom_title.png");
     play_btn_tex = new Texture("res/art/play.png");
     quit_btn_tex = new Texture("res/art/quit.png");
+
+    soundtrack = new AudioBuffer("res/audio/loading.ogg"); 
+    
+    audio_source.SetSpatial(false);
+    audio_source.SetLooping(true);
+    audio_source.Play(soundtrack);
 }
 
 void MainMenuScene::Init(SceneManager *manager)
@@ -24,7 +30,8 @@ void MainMenuScene::Init(SceneManager *manager)
     play_btn_bounds = glm::vec4(center_x - 100.0f, center_y + 100.0f, 200.0f, 60.0f);
     quit_btn_bounds = glm::vec4(center_x - 100.0f, center_y + 200.0f, 200.0f, 60.0f);
 
-    Input::ToggleCursor(window->GetWindow());
+    Input::SetCursorHidden(window->GetWindow(), false);
+
 
     bg_shader = new Shader("res/shaders/vertex.glsl", "res/shaders/fragment.glsl");
 
@@ -42,8 +49,37 @@ void MainMenuScene::ProcessInput()
 
         if (CheckButtonClick(play_btn_bounds, mx, my))
         {
-            // play game
-            scene_manager->ChangeScene(new LevelScene("res/maps/level_2.map", window, ui_manager));
+            Window* win = window;
+            UIManager* ui = ui_manager;
+            SceneManager* sm = scene_manager;
+
+            // Set up Level 1
+            auto lvl1 = new LevelScene("res/maps/level_1.map", win, ui);
+            lvl1->SetSoundtrack("res/audio/at_dooms_gate.ogg");
+
+            lvl1->SetCompletionLogic(
+                [lvl1]() -> bool {
+                    return lvl1->GetPlayer() != nullptr && lvl1->GetPlayer()->HasKey("end_key");
+                },
+                [win, ui, sm]() -> void {
+                    auto lvl2 = new LevelScene("res/maps/level_2.map", win, ui);
+                    lvl2->SetSoundtrack("res/audio/sign_of_evil.ogg");
+                    
+                    lvl2->SetCompletionLogic(
+                        [lvl2]() -> bool {
+                            return lvl2->GetPlayer() != nullptr && lvl2->GetPlayer()->HasKey("end_key");
+                        },
+                        [win, ui, sm]() -> void {
+                            auto menu = new MainMenuScene(win, ui);
+                            sm->ChangeScene(menu);
+                        }
+                    );
+
+                    sm->ChangeScene(lvl2);
+                }
+            );
+
+            scene_manager->ChangeScene(lvl1);
         }
         else if (CheckButtonClick(quit_btn_bounds, mx, my))
         {

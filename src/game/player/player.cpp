@@ -9,10 +9,12 @@ Player::Player(glm::vec3 spawn_pos)
     this->Entity::health = &this->health;
     current_weapon = new Banana();
 
-    health.on_death = []() -> void
+    sfx_footstep = new AudioBuffer("res/audio/footstep.ogg");
+    sfx_shoot = new AudioBuffer("res/audio/shoot.ogg");
+
+    health.on_death = [this]() -> void
     {
-        // TODO: dieee
-        return;
+        this->is_dead = true;
     };
 }
 
@@ -20,6 +22,8 @@ Player::~Player()
 {
     if (current_weapon)
         delete current_weapon;
+    if (sfx_footstep)
+        delete sfx_footstep;
 }
 
 void Player::UpdatePlayer(f32 delta_time, const vector<AABB> &obstacles, vector<Entity *> &entities)
@@ -67,6 +71,8 @@ void Player::UpdateMouseLook()
 
 void Player::HandleInput(f32 delta_time, vector<Entity *> &entities)
 {
+    if(is_dead) return;
+
     // 1. Flatten the camera vectors so looking up/down doesn't slow your movement
     glm::vec3 forward = cam.Front;
     forward.y = 0.0f;
@@ -245,7 +251,20 @@ void Player::HeadBob(f32 delta_time)
         target_amp = 0.0f;
 
     current_bob_amp = glm::mix(current_bob_amp, target_amp, BOB_SMOOTHING * delta_time);
+    
+    f32 old_phase = bob_phase;
     bob_phase += target_freq * delta_time;
+
+    if (is_grounded && spd > BOB_MIN_SPEED)
+    {
+        bool crossed_half = (old_phase < glm::pi<f32>() && bob_phase >= glm::pi<f32>());
+        bool crossed_full = (bob_phase >= 2.0f * glm::pi<f32>());
+
+        if (crossed_half || crossed_full)
+        {
+            PlaySoundOverlapped(sfx_footstep);
+        }
+    }
 
     if (bob_phase > 2 * glm::pi<f32>())
         bob_phase -= 2 * glm::pi<f32>();
@@ -277,6 +296,7 @@ void Player::PlaySoundOverlapped(AudioBuffer *buffer)
     if (!buffer)
         return;
 
+    audio_pool[current_audio_index].SetSpatial(false);
     audio_pool[current_audio_index].Play(buffer);
 
     current_audio_index = (current_audio_index + 1) % AUDIO_POOL_SIZE;
