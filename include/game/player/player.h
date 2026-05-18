@@ -36,7 +36,7 @@ private:
     const f32 DASH_SPEED = 25.0f;
     const f32 DASH_JUMP_FORCE = 2.0f;
     const int MAX_DASH_CHARGES = 3;
-    const f32 DASH_RECHARGE_TIME = 2.0f;
+    const f32 DASH_RECHARGE_TIME = 1.0f;
 
     // Camera & Polish
     const f32 CAM_Y_POS = 0.8f;

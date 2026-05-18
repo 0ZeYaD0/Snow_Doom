@@ -51,11 +51,11 @@ private:
     const f32 GRAVITY = 25.0f;
 
     // ── AI config
-    const f32 ATTACK_RANGE = 8.0f;
-    const f32 STOP_RANGE = 2.5f;
-    const f32 SHOOT_COOLDOWN = 1.4f;
+    const f32 ATTACK_RANGE = 12.0f;
+    const f32 STOP_RANGE = 3.0f;
+    const f32 SHOOT_COOLDOWN = 0.75f;
     const f32 LOS_CHECK_INTERVAL = 0.12f;
-    const f32 PROJECTILE_SPEED = 18.0f;
+    const f32 PROJECTILE_SPEED = 20.0f;
     const f32 PROJECTILE_DAMAGE = 10.0f;
 
     // ── AI runtime state

@@ -14,7 +14,6 @@
 LevelScene::LevelScene(const string &map_file, Window *game_window, UIManager *ui)
     : map_filepath(map_file), window(game_window), ui_manager(ui), player(nullptr), main_shader(nullptr)
 {
-    
 }
 
 void LevelScene::Init(SceneManager *manager)
@@ -44,7 +43,7 @@ void LevelScene::Init(SceneManager *manager)
     current_frame_colliders = level_colliders;
 
     Mesh *sprite_quad = new Mesh(BuildSpriteQuad());
-    AudioBuffer *snd_death = new AudioBuffer("res/audio/death/4.ogg");
+    AudioBuffer *snd_death = new AudioBuffer("res/audio/death.ogg");
     AudioBuffer *snd_enemy_shoot = new AudioBuffer("res/audio/snowball_sound.ogg");
     Texture *enemy_bullet_tex = new Texture("res/art/snowball.png");
 
@@ -93,9 +92,9 @@ void LevelScene::Init(SceneManager *manager)
         entities.push_back(new_door);
     }
 
-    bg_music = new AudioBuffer(soundtrack_file); 
+    bg_music = new AudioBuffer(soundtrack_file);
     you_died_music = new AudioBuffer(you_died_file);
-    
+
     bg_audio_source.SetSpatial(false);
     bg_audio_source.SetLooping(true);
     bg_audio_source.SetVolume(0.3f);
@@ -111,7 +110,7 @@ void LevelScene::Update(f32 dt)
 {
     if (player && player->IsDead())
     {
-        if(!played_death_sound)
+        if (!played_death_sound)
         {
             bg_audio_source.Stop();
 
@@ -119,14 +118,14 @@ void LevelScene::Update(f32 dt)
             bg_audio_source.SetLooping(false);
             bg_audio_source.SetVolume(1.0f);
             bg_audio_source.Play(you_died_music);
-            
+
             played_death_sound = true;
         }
 
         if (Input::GetActionDown("Jump") || Input::GetActionDown("Fire"))
             Reset();
-        
-        return; 
+
+        return;
     }
 
     // This loop now automatically updates projectiles spawned by the player or enemies
@@ -213,29 +212,31 @@ void LevelScene::Cleanup()
     for (auto e : entities)
         delete e;
     entities.clear();
-    
+
     level_colliders.clear();
     current_frame_colliders.clear();
-    
-    if (bg_music) {
+
+    if (bg_music)
+    {
         delete bg_music;
         bg_music = nullptr;
     }
-    
-    if (you_died_music) {
+
+    if (you_died_music)
+    {
         delete you_died_music;
-        you_died_music = nullptr; 
+        you_died_music = nullptr;
     }
 }
 
 void LevelScene::Reset()
 {
-    bg_audio_source.Stop(); 
+    bg_audio_source.Stop();
     Cleanup();
-    
+
     is_completed = false;
     played_death_sound = false;
-    
+
     Init(scene_manager);
 }
 
