@@ -223,12 +223,6 @@ The game uses **OpenAL** for spatial audio. Audio files are organized in `res/au
 
 ---
 
-## 📄 License
-
-[Add license information here]
-
----
-
 ## 👤 Author
 
 **0ZeYaD0** – Game Developer <br>
